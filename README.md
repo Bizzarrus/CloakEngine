@@ -19,6 +19,7 @@ The main engine. Currently supported features include:
 - Component based entity system
 - Dynamic world streaming, supporting partially loaded files for faster load times
 - Basic 2D interface
+
 Furthermore, the following features and changes are currently planned or being developted (not in this repository):
 - Swapping the shadow mapping technique from regulare MSM to Non-Linearly Quantized MSM
 - Implementing clustered shading for dynamic light sources and improved culling methods
