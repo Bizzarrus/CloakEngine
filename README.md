@@ -32,3 +32,5 @@ Furthermore, the following features and changes are currently planned or being d
 - Implementing support for Windows 8.1 and other operating systems
 ## CloakEngineTest
 A executable program to test most currently avaiblabe features of the engine, using simple and free available geometry, materials and images. Camera can be controlled with WASD, the mouse cursor can be made visible by holding the ALT key. Available commands for the additional command-line window can be seen by entering ``?`` or ``cloak help``.
+# Notice
+The engine is completly developed by myself and currenlty only written for private usage.
