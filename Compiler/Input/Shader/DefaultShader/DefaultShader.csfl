@@ -1,0 +1,346 @@
+{
+	"Config" : {
+		"CreateHeader" : true,
+		"CreateFile" : true,
+		"CompressType" : "LZC",
+		"TargetCGID" : 0,
+		"NamespaceAlias" : true,
+		"LibGenerator" : "VS2019",
+		"SharedLib" : false,
+		"Debug" : false
+	},
+	"Shader" : {
+		"Skybox" : {
+			"Type" : "Default",
+			"OptimizationLevel" : 3,
+			"Files" : {
+				"Version" : "All",
+				"Pass" : [
+					"VS",
+					"PS"
+				],
+				"Usage" : "Allways",
+				"File" : "SkyboxPass.hlsl"
+			}
+		},
+		"Interface" : {
+			"Type" : "Default",
+			"OptimizationLevel" : 3,
+			"Files" : {
+				"Version" : "All",
+				"Pass" : [
+					"VS",
+					"PS"
+				],
+				"Usage" : "Allways",
+				"File" : "InterfacePass.hlsl"
+			}
+		},
+		"FadeOut" : {
+			"Type" : "Default",
+			"OptimizationLevel" : 3,
+			"Files" : {
+				"Version" : "All",
+				"Pass" : [
+					"VS",
+					"PS"
+				],
+				"Usage" : "Allways",
+				"File" : "FadeOut.hlsl"
+			}
+		},
+		"ToneMapping" : {
+			"Type" : "Default",
+			"OptimizationLevel" : 3,
+			"Files" : {
+				"Version" : "All",
+				"Pass" : [
+					"VS",
+					"PS"
+				],
+				"Usage" : "Allways",
+				"File" : "ToneMapping.hlsl"
+			}
+		},
+		"Phase1Opaque" : {
+			"Type" : "Tessellation",
+			"OptimizationLevel" : 3,
+			"Files" : [
+				{
+					"Version" : "All",
+					"Pass" : [
+						"VS",
+						"PS"
+					],
+					"Usage" : "Allways",
+					"File" : "Phase1Opaque.hlsl"
+				},
+				{
+					"Version" : "All",
+					"Pass" : [
+						"DS",
+						"HS"
+					],
+					"Usage" : {
+						"Tessellation" : true
+					},
+					"File" : "Phase1Opaque.hlsl"
+				}
+			]
+		},
+		"Phase1Alpha" : {
+			"Type" : "Tessellation",
+			"OptimizationLevel" : 3
+		},
+		"Phase1Transparent" : {
+			"Type" : "Tessellation",
+			"OptimizationLevel" : 3
+		},
+		"Phase2ClusterAssignment" : {
+			"Type" : "Complex",
+			"OptimizationLevel" : 3,
+			"Files" : {
+				"Version" : "All",
+				"Pass" : [
+					"VS",
+					"PS"
+				],
+				"Usage" : "Allways",
+				"File" : "Phase2ClusterAssignment.hlsl"
+			}
+		},
+		"Phase2ClusterCompression" : {
+			"Type" : "Compute",
+			"OptimizationLevel" : 3,
+			"Files" : {
+				"Version" : "All",
+				"Pass" : [
+					"CS"
+				],
+				"Usage" : "Allways",
+				"File" : "Phase2ClusterCompression.hlsl"
+			}
+		},
+		"Phase2LightAssignment" : {
+			"Type" : "Compute",
+			"OptimizationLevel" : 3
+		},
+		"Phase3Opaque" : {
+			"Type" : "Complex",
+			"OptimizationLevel" : 3
+		},
+		"Phase3Alpha" : {
+			"Type" : "Tessellation",
+			"OptimizationLevel" : 3
+		},
+		"Phase3Transparent" : {
+			"Type" : "Tessellation",
+			"OptimizationLevel" : 3
+		},
+		"PreMSAA" : {
+			"Type" : "MSAA",
+			"OptimizationLevel" : 3,
+			"Files" : {
+				"Version" : "All",
+				"Pass" : [
+					"VS",
+					"PS"
+				],
+				"Usage" : "Allways",
+				"UseNot" : {
+					"MSAA" : 1
+				},
+				"File" : "MSAAPrePass.hlsl"
+			}
+		},
+		"AmbientOpaque" : {
+			"Type" : "Complex",
+			"OptimizationLevel" : 3,
+			"Files" : {
+				"Version" : "All",
+				"Pass" : [
+					"VS",
+					"PS"
+				],
+				"Usage" : "Allways",
+				"File" : "AmbientOpaque.hlsl"
+			}
+		},
+		"AmbientAlpha" : {
+			"Type" : "Default",
+			"OptimizationLevel" : 3
+		},
+		"AmbientTransparent" : {
+			"Type" : "Default",
+			"OptimizationLevel" : 3
+		},
+		"DirectionalOpaque" : {
+			"Type" : "Complex",
+			"OptimizationLevel" : 3,
+			"Files" : {
+				"Version" : "All",
+				"Pass" : [
+					"VS",
+					"PS"
+				],
+				"Usage" : "Allways",
+				"File" : "DirectionalOpaque.hlsl"
+			}
+		},
+		"DirectionalAlpha" : {
+			"Type" : "Default",
+			"OptimizationLevel" : 3
+		},
+		"DirectionalTransparent" : {
+			"Type" : "Default",
+			"OptimizationLevel" : 3
+		},
+		"TransparentResolve" : {
+			"Type" : "Complex",
+			"OptimizationLevel" : 3
+		},
+		"LuminancePass1" : {
+			"Type" : "Compute",
+			"OptimizationLevel" : 3,
+			"Files" : {
+				"Version" : "All",
+				"Pass" : [
+					"CS"
+				],
+				"Usage" : "Allways",
+				"File" : "LuminanceReduction2D.hlsl"
+			}
+		},
+		"LuminancePass2" : {
+			"Type" : "Compute",
+			"OptimizationLevel" : 3,
+			"Files" : {
+				"Version" : "All",
+				"Pass" : [
+					"CS"
+				],
+				"Usage" : "Allways",
+				"File" : "LuminanceReduction1D.hlsl"
+			}
+		},
+		"DirectionalShadowOpaque" : {
+			"Type" : "Tessellation",
+			"OptimizationLevel" : 3,
+			"Files" : [
+				{
+					"Version" : "All",
+					"Pass" : [
+						"VS",
+						"PS"
+					],
+					"Usage" : "Allways",
+					"File" : "DirectionalShadowOpaque.hlsl"
+				},
+				{
+					"Version" : "All",
+					"Pass" : [
+						"HS",
+						"DS"
+					],
+					"Usage" : {
+						"Tessellation" : true
+					},
+					"File" : "DirectionalShadowOpaque.hlsl"
+				}
+			]
+		},
+		"DirectionalShadowAlpha" : {
+			"Type" : "Tessellation",
+			"OptimizationLevel" : 3
+		},
+		"BlurX" : {
+			"Type" : "Compute",
+			"OptimizationLevel" : 3,
+			"Files" : {
+				"Version" : "All",
+				"Pass" : [
+					"CS"
+				],
+				"Usage" : "Allways",
+				"File" : "BlurX.hlsl"
+			}
+		},
+		"BlurY" : {
+			"Type" : "Compute",
+			"OptimizationLevel" : 3,
+			"Files" : {
+				"Version" : "All",
+				"Pass" : [
+					"CS"
+				],
+				"Usage" : "Allways",
+				"File" : "BlurY.hlsl"
+			}
+		},
+		"Resize" : {
+			"Type" : "Default",
+			"OptimizationLevel" : 3,
+			"Files" : {
+				"Version" : "All",
+				"Pass" : [
+					"VS",
+					"PS"
+				],
+				"Usage" : "Allways",
+				"File" : "Resize.hlsl"
+			}
+		},
+		"BloomFinish" : {
+			"Type" : "Default",
+			"OptimizationLevel" : 3,
+			"Files" : {
+				"Version" : "All",
+				"Pass" : [
+					"VS",
+					"PS"
+				],
+				"Usage" : "Allways",
+				"File" : "Resize.hlsl"
+			}
+		},
+		"BloomBright" : {
+			"Type" : "Default",
+			"OptimizationLevel" : 3,
+			"Files" : {
+				"Version" : "All",
+				"Pass" : [
+					"VS",
+					"PS"
+				],
+				"Usage" : "Allways",
+				"File" : "BrightPass.hlsl"
+			}
+		},
+		"OpaqueResolve" : {
+			"Type" : "Default",
+			"OptimizationLevel" : 3,
+			"Files" : {
+				"Version" : "All",
+				"Pass" : [
+					"VS",
+					"PS"
+				],
+				"Usage" : "Allways",
+				"File" : "OpaqueResolve.hlsl"
+			}
+		},
+		"IBL" : {
+			"Type" : "Complex",
+			"OptimizationLevel" : 3,
+			"Files" : {
+				"Version" : "All",
+				"Pass" : [
+					"VS",
+					"PS"
+				],
+				"Usage" : "Allways",
+				"File" : "IBL.hlsl"
+			}
+		}
+	}
+}

@@ -1,0 +1,6 @@
+newmtl pot
+  Ns 0.3000
+  Ni 1.5000
+  d 1.0000
+  Ks 0.0000 0.0000 0.0000
+  map_Ka Diff1.png

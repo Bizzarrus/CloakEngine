@@ -1,0 +1,52 @@
+{
+	"Config" : {
+		"Compress" : "LZ4",
+		"Target" : "Test"
+	},
+	"Mesh" : {
+		"File" : "teapot.obj",
+		"BoundingType" : "OOB",
+		"IndexBuffer" : true,
+		"Quality" : "ULTRA",
+		"BlockSize" : 0,
+		"Location" : "Teapot",
+		"Material" : {
+			"Config" : {
+				"YCCA" : {
+					"Y" : 8,
+					"C" : 8,
+					"A" : 8
+				},
+				"RGBA" : {
+					"R" : 8,
+					"G" : 8,
+					"B" : 8,
+					"A" : 8
+				},
+				"RGBE" : {
+					"R" : 8,
+					"G" : 8,
+					"B" : 8,
+					"E" : 8
+				},
+				"Material" : {
+					"A" : 16
+				},
+				"Overwrite" : false,
+				"EncodeMaterial" : true
+			},
+			"Materials" : [
+				{
+					"Constants" : {
+						"Porosity" : 0.350000,
+						"NormalMap" : {
+							"XPointsLeft" : false,
+							"YPointsUp" : true,
+							"OnlyPositiveZ" : true
+						}
+					}
+				}
+			]
+		}
+	}
+}

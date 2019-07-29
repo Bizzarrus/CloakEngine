@@ -1,0 +1,48 @@
+{
+	"Config" : {
+		"Compress" : "LZ4",
+		"Target" : "Test",
+		"YCCA" : {
+			"Y" : 10,
+			"C" : 11,
+			"A" : 8,
+		},
+		"RGBA" : {
+			"R" : 8,
+			"G" : 8,
+			"B" : 8,
+			"A" : 8,
+		},
+		"Material" : {
+			"A" : 16,
+		},
+		"RGBE" : {
+			"R": 8,
+			"G": 8,
+			"B": 8,
+			"E": 8,
+		},
+	},
+	"Images" : [
+		{
+			"Textures" : [
+				{
+					"Path" : "GUITest.png",
+					"BlockSize" : 0,
+					"ColorSpace" : "RGBA",
+					"Type" : "Normal",
+				},
+			],
+			"CreateAlphaMap" : true,
+			"EncodeA" : true,
+			"DynamicSize" : false,
+			"Type" : "List",
+			"Quality" : "HIGH",
+			"Heap" : "GUI",
+			"MipMapCount" : 1023,
+			"EncodeR" : true,
+			"EncodeG" : true,
+			"EncodeB" : true,
+		},
+	],
+},

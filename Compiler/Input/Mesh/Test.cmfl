@@ -1,0 +1,102 @@
+{
+	"Config" : {
+		"Compress" : "LZ4",
+		"Target" : "Test",
+	},
+	"Mesh" : {
+		"File" : "cube.obj",
+		"BoundingType" : "OOB",
+		"IndexBuffer" : true,
+		"Quality" : "ULTRA",
+		"BlockSize" : 0,
+		"Location" : "Test",
+		"Material" : {
+			"Config" : {
+				"YCCA" : {
+					"Y" : 8,
+					"C" : 8,
+					"A" : 8,
+				},
+				"RGBA" : {
+					"R" : 8,
+					"G" : 8,
+					"B" : 8,
+					"A" : 8,
+				},
+				"RGBE" : {
+					"R" : 8,
+					"G" : 8,
+					"B" : 8,
+					"E" : 8,
+				},
+				"Material" : {
+					"A" : 16,
+				},
+				"Overwrite" : false,
+				"EncodeMaterial" : true,
+			},
+			"Materials" : [
+				{
+					"Constants" : {
+						"NormalMap" : {
+							"XPointsLeft" : true,
+							"YPointsUp" : true,
+							"OnlyPositiveZ" : true,
+						},
+						"Porosity" : 0.35,
+					},
+				},
+				{
+					"Constants" : {
+						"NormalMap" : {
+							"XPointsLeft" : true,
+							"YPointsUp" : true,
+							"OnlyPositiveZ" : true,
+						},
+						"Porosity" : 0.35,
+					},
+				},
+				{
+					"Constants" : {
+						"NormalMap" : {
+							"XPointsLeft" : true,
+							"YPointsUp" : true,
+							"OnlyPositiveZ" : true,
+						},
+						"Porosity" : 0.35,
+					},
+				},
+				{
+					"Constants" : {
+						"NormalMap" : {
+							"XPointsLeft" : true,
+							"YPointsUp" : true,
+							"OnlyPositiveZ" : true,
+						},
+						"Porosity" : 0.35,
+					},
+				},
+				{
+					"Constants" : {
+						"NormalMap" : {
+							"XPointsLeft" : true,
+							"YPointsUp" : true,
+							"OnlyPositiveZ" : true,
+						},
+						"Porosity" : 0.35,
+					},
+				},
+				{
+					"Constants" : {
+						"NormalMap" : {
+							"XPointsLeft" : true,
+							"YPointsUp" : true,
+							"OnlyPositiveZ" : true,
+						},
+						"Porosity" : 0.35,
+					},
+				},
+			],
+		},
+	},
+},

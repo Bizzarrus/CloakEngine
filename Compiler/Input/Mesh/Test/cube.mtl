@@ -1,0 +1,42 @@
+newmtl cube1
+  Ns 0.3000
+  Ni 1.5000
+  d 1.0000
+  Ks 0.0000 0.0000 0.0000
+  map_Ka Diff1.png
+  norm normalMap.png
+newmtl cube2
+  Ns 0.3000
+  Ni 1.5000
+  d 1.0000
+  Ks 0.0000 0.0000 0.0000
+  map_Ka Diff2.png
+  norm normalMap.png
+newmtl cube3
+  Ns 0.3000
+  Ni 1.5000
+  d 1.0000
+  Ks 0.0000 0.0000 0.0000
+  map_Ka Diff3.png
+  norm normalMap.png
+newmtl cube4
+  Ns 0.0100
+  Ni 0.0000
+  Pm 0.6439
+  d 1.0000
+  Ks 0.6581 0.6581 0.6581
+  map_Ka Diff4.png
+newmtl cube5
+  Ns 0.3000
+  Ni 1.5000
+  d 1.0000
+  Ks 0.0000 0.0000 0.0000
+  map_Ka Diff4.png
+  norm normalMap.png
+newmtl cube6
+  Ns 0.3000
+  Ni 1.5000
+  d 1.0000
+  Ks 0.0000 0.0000 0.0000
+  map_Ka Diff6.png
+  norm normalMap.png

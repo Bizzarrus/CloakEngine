@@ -1,0 +1,40 @@
+{
+	"Config" : {
+		"CreateHeader" : true,
+		"CreateFile" : false,
+		"CompressType" : "LZ4",
+		"TargetCGID" : 0,
+		"NamespaceAlias" : true,
+		"LibGenerator" : "VS2019"
+	},
+	"Shader" : {
+		"RadianceSecondSum" : {
+			"Type" : "Default",
+			"Debug" : false,
+			"OptimizationLevel" : 3,
+			"Files" : {
+				"Version" : "All",
+				"Pass" : [
+					"VS",
+					"PS"
+				],
+				"Usage" : "Allways",
+				"File" : "SkyboxRadiance2.hlsl"
+			}
+		},
+		"RadianceFirstSum" : {
+			"Type" : "Default",
+			"Debug" : false,
+			"OptimizationLevel" : 3,
+			"Files" : {
+				"Version" : "All",
+				"Pass" : [
+					"VS",
+					"PS"
+				],
+				"Usage" : "Allways",
+				"File" : "SkyboxRadiance1.hlsl"
+			}
+		}
+	}
+}

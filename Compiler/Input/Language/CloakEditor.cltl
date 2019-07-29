@@ -1,0 +1,147 @@
+[Config]
+bHeader=true
+sCompressType="ZLIB"
+iTargetCGID=1
+
+[Languages]
+DE=0
+EN=1
+
+[DE]
+NAME = "CloakEditor"
+NAME_LANG_DE = "Deutsch"
+NAME_LANG_EN = "Englisch"
+
+TOPBAR_FILE = "Datei"
+TOPBAR_FILE_NEW = "Neu..."
+TOPBAR_FILE_CLOSE = "Schließen"
+TOPBAR_FILE_SAVE = "Speichern"
+TOPBAR_FILE_SAVEAS = "Speichern als"
+TOPBAR_FILE_OPEN = "Öffnen"
+
+TOPBAR_EDIT = "Bearbeiten"
+TOPBAR_EDIT_UNDO = "Rückgängig"
+TOPBAR_EDIT_REDO = "Wiederholen"
+TOPBAR_EDIT_CONFIG = "Einstellungen"
+
+TOPBAR_VIEW = "Ansicht"
+
+TOPBAR_PROJ = "Projekt"
+TOPBAR_PROJ_CONFIG = "Eigenschaften"
+
+FILE_TYPE_PROJECT = "Projekt"
+FILE_TYPE_ALL = "Alle"
+FILE_TYPE_MOD = "Mod"
+FILE_TYPE_PNG = "Portable Network Graphic"
+FILE_TYPE_BMP = "Windows Bitmap Format"
+FILE_TYPE_GIF = "Graphics Interchange Format"
+FILE_TYPE_ICO = "Icon Format"
+FILE_TYPE_JPEG = "Joint Photographic Experts Group"
+FILE_TYPE_TIFF = "Tagged Image File Format"
+
+
+FEXPL_STORY = "Storyflow"
+FEXPL_FONTS = "Fonts"
+FEXPL_LANG = "Localisierung"
+FEXPL_ASSETS = "Assets"
+FEXPL_ASSETS_IMGS = "Grafiken"
+FEXPL_ASSETS_MESH = "Geometrie"
+
+DLG_ABORT = "Abbrechen"
+
+DLG_PROJ_OK = "Erstellen"
+DLG_PROJ_TITLE = "Projekt erstellen"
+DLG_PROJ_NAME = "Name des Projekts:"
+DLG_PROJ_PATH = "Speicherpfad:"
+DLG_PROJ_TEMP_ENABLE = "Verwende temporäre Dateien (Empfohlen)"
+DLG_PROJ_TEMP_PATH = "Pfad für temporäre Dateien:"
+DLG_PROJ_ERR_NAME = "Der Name des Projekts muss mindestens 4 Zeichen lang sein."
+DLG_PROJ_ERR_PATH = "Es muss ein Projektpfad angegeben sein."
+DLG_PROJ_ERR_TEMP = "Es muss ein Pfad für temporäre Dateien angegeben sein, wenn diese genutzt werden sollen."
+DLG_PROJ_ERR_SAME = "Der Pfad des Projekts muss sich von dem füt temporäre Dateien unterscheiden."
+DLG_PROJ_ERR_EXIST = "An diesem Ort existiert bereits ein Projekt mit diesem Namen."
+
+DLG_CONT_ADD = "Hinzufügen"
+DLG_CONT_ADD_IMG_PACKAGE = "Neuer Bildkontainer"
+DLG_CONT_ADD_IMG = "Vorhandenes Bild"
+DLG_CONT_ADD_IMG_BUILDER = "Erzeugtes Bild"
+DLG_CONT_DEL = "Entfernen"
+DLG_CONT_PROPERTYS = "Eigenschaften"
+
+TV_MENU_ASSETS = "Assets"
+TV_MENU_ASSETS_IMAGE = "Grafiken"
+TV_MENU_ASSETS_MESH = "3D Dateien"
+TV_MENU_PLANNING = "Planung"
+TV_MENU_PLANNING_STORY = "Story-Graph"
+TV_MENU_DATA = "Daten"
+TV_MENU_DATA_ENTITY = "Objekte"
+TV_MENU_DATA_SCENE = "Scenen"
+
+[EN]
+NAME = "CloakEditor"
+NAME_LANG_DE = "German"
+NAME_LANG_EN = "English"
+
+TOPBAR_FILE = "File"
+TOPBAR_FILE_NEW = "New..."
+TOPBAR_FILE_CLOSE = "Close"
+TOPBAR_FILE_SAVE = "Save"
+TOPBAR_FILE_SAVEAS = "Save as"
+TOPBAR_FILE_OPEN = "Load"
+
+TOPBAR_EDIT = "Edit"
+TOPBAR_EDIT_UNDO = "Undo"
+TOPBAR_EDIT_REDO = "Redo"
+TOPBAR_EDIT_CONFIG = "Configuration"
+
+TOPBAR_VIEW = "View"
+
+TOPBAR_PROJ = "Project"
+TOPBAR_PROJ_CONFIG = "Properties"
+
+FILE_TYPE_PROJECT = "Project"
+FILE_TYPE_ALL = "All"
+FILE_TYPE_MOD = "Mod"
+FILE_TYPE_PNG = "Portable Network Graphic"
+FILE_TYPE_BMP = "Windows Bitmap Format"
+FILE_TYPE_GIF = "Graphics Interchange Format"
+FILE_TYPE_ICO = "Icon Format"
+FILE_TYPE_JPEG = "Joint Photographic Experts Group"
+FILE_TYPE_TIFF = "Tagged Image File Format"
+
+FEXPL_STORY = "Storyflow"
+FEXPL_FONTS = "Fonts"
+FEXPL_LANG = "Locaisation"
+FEXPL_ASSETS = "Assets"
+FEXPL_ASSETS_IMGS = "Images"
+FEXPL_ASSETS_MESH = "Geometry"
+
+DLG_ABORT = "Cancel"
+
+DLG_PROJ_OK = "Create"
+DLG_PROJ_TITLE = "Create project"
+DLG_PROJ_NAME = "Name of the project:"
+DLG_PROJ_PATH = "Save path:"
+DLG_PROJ_TEMP_ENABLE = "Use temp files (Recommended)"
+DLG_PROJ_TEMP_PATH = "Temp file path:"
+DLG_PROJ_ERR_NAME = "The name of the projct must have at least 4 characters."
+DLG_PROJ_ERR_PATH = "There must be a project path."
+DLG_PROJ_ERR_TEMP = "There must be a temp path if they're used."
+DLG_PROJ_ERR_SAME = "The path of the project must be different than the path of temp files."
+DLG_PROJ_ERR_EXIST = "There's already a project with this name at this path."
+
+DLG_CONT_ADD = "Add"
+DLG_CONT_ADD_IMG_PACKAGE = "New Image Package"
+DLG_CONT_ADD_IMG = "Existing image"
+DLG_CONT_ADD_IMG_BUILDER = "Image Builder"
+DLG_CONT_DEL = "Delete"
+DLG_CONT_PROPERTYS = "Properties"
+
+TV_MENU_ASSETS = "Assets"
+TV_MENU_ASSETS_IMAGE = "Images"
+TV_MENU_ASSETS_MESH = "3D Meshes"
+TV_MENU_PLANNING = "Planning"
+TV_MENU_PLANNING_STORY = "Story-Graph"
+TV_MENU_DATA = "Data"
+TV_MENU_DATA_ENTITY = "Entities"
+TV_MENU_DATA_SCENE = "Scenes"
