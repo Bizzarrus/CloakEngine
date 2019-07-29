@@ -1,0 +1,204 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Quelldateien">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Headerdateien">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Ressourcendateien">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Headerdateien\API">
+      <UniqueIdentifier>{732d33d1-2b58-42a6-a692-ff7349ef1817}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Headerdateien\Implementation">
+      <UniqueIdentifier>{dab3393b-b176-432e-a449-ba5919e31434}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Headerdateien\Engine">
+      <UniqueIdentifier>{fb6f3f44-53c3-4b80-ae94-2756fab4fae1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Quelldateien\API">
+      <UniqueIdentifier>{270ef343-8c24-4056-be13-2a8270eee9a1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Quelldateien\Engine">
+      <UniqueIdentifier>{97ccabfe-0df4-4944-b1a6-a00f2dd8d55b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Headerdateien\Engine\Image">
+      <UniqueIdentifier>{8d06752a-cb7a-4a49-8aac-bd068d760a41}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Quelldateien\Engine\Image">
+      <UniqueIdentifier>{f6fa0fd4-5498-4e33-b36a-d8e7c45c5de7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Headerdateien\Engine\Codecs">
+      <UniqueIdentifier>{c6795796-4489-4f49-bd3d-1900a0f0a274}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Quelldateien\Engine\Codecs">
+      <UniqueIdentifier>{59123548-df23-4601-9259-809795847090}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="stdafx.h">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
+    <ClInclude Include="targetver.h">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
+    <ClInclude Include="CloakCompiler\Defines.h">
+      <Filter>Headerdateien\API</Filter>
+    </ClInclude>
+    <ClInclude Include="CloakCompiler\Shader.h">
+      <Filter>Headerdateien\API</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\TextureLoader.h">
+      <Filter>Headerdateien\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="CloakCompiler\Image.h">
+      <Filter>Headerdateien\API</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\TempHandler.h">
+      <Filter>Headerdateien\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="CloakCompiler\Font.h">
+      <Filter>Headerdateien\API</Filter>
+    </ClInclude>
+    <ClInclude Include="CloakCompiler\Language.h">
+      <Filter>Headerdateien\API</Filter>
+    </ClInclude>
+    <ClInclude Include="CloakCompiler\EncoderBase.h">
+      <Filter>Headerdateien\API</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\ImageBuilder.h">
+      <Filter>Headerdateien\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="CloakCompiler\Mesh.h">
+      <Filter>Headerdateien\API</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\BoundingVolume.h">
+      <Filter>Headerdateien\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\ConvexHull.h">
+      <Filter>Headerdateien\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="CloakCompiler\Converter.h">
+      <Filter>Headerdateien\API</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Image\Entry.h">
+      <Filter>Headerdateien\Engine\Image</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Image\EntryList.h">
+      <Filter>Headerdateien\Engine\Image</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Image\EntryArray.h">
+      <Filter>Headerdateien\Engine\Image</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Image\EntryCube.h">
+      <Filter>Headerdateien\Engine\Image</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Image\EntryAnimation.h">
+      <Filter>Headerdateien\Engine\Image</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Image\EntryMaterial.h">
+      <Filter>Headerdateien\Engine\Image</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Image\Core.h">
+      <Filter>Headerdateien\Engine\Image</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Image\MipMapGeneration.h">
+      <Filter>Headerdateien\Engine\Image</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Image\TextureEncoding.h">
+      <Filter>Headerdateien\Engine\Image</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Image\EntrySkybox.h">
+      <Filter>Headerdateien\Engine\Image</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Codecs\HDRI.h">
+      <Filter>Headerdateien\Engine\Codecs</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\LibWriter.h">
+      <Filter>Headerdateien\Engine</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="stdafx.cpp">
+      <Filter>Quelldateien</Filter>
+    </ClCompile>
+    <ClCompile Include="CloakCompiler.cpp">
+      <Filter>Quelldateien</Filter>
+    </ClCompile>
+    <ClCompile Include="dllmain.cpp">
+      <Filter>Quelldateien</Filter>
+    </ClCompile>
+    <ClCompile Include="Shader.cpp">
+      <Filter>Quelldateien\API</Filter>
+    </ClCompile>
+    <ClCompile Include="TextureLoader.cpp">
+      <Filter>Quelldateien\Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="TempHandler.cpp">
+      <Filter>Quelldateien\Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="ImageBuilder.cpp">
+      <Filter>Quelldateien\Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="BoundingVolume.cpp">
+      <Filter>Quelldateien\Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="ConvexHull.cpp">
+      <Filter>Quelldateien\Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="Converter.cpp">
+      <Filter>Quelldateien\API</Filter>
+    </ClCompile>
+    <ClCompile Include="Core.cpp">
+      <Filter>Quelldateien\Engine\Image</Filter>
+    </ClCompile>
+    <ClCompile Include="EntryList.cpp">
+      <Filter>Quelldateien\Engine\Image</Filter>
+    </ClCompile>
+    <ClCompile Include="EntryArray.cpp">
+      <Filter>Quelldateien\Engine\Image</Filter>
+    </ClCompile>
+    <ClCompile Include="EntryCube.cpp">
+      <Filter>Quelldateien\Engine\Image</Filter>
+    </ClCompile>
+    <ClCompile Include="EntryAnimation.cpp">
+      <Filter>Quelldateien\Engine\Image</Filter>
+    </ClCompile>
+    <ClCompile Include="EntryMaterial.cpp">
+      <Filter>Quelldateien\Engine\Image</Filter>
+    </ClCompile>
+    <ClCompile Include="MipMapGeneration.cpp">
+      <Filter>Quelldateien\Engine\Image</Filter>
+    </ClCompile>
+    <ClCompile Include="TextureEncoding.cpp">
+      <Filter>Quelldateien\Engine\Image</Filter>
+    </ClCompile>
+    <ClCompile Include="EntrySkybox.cpp">
+      <Filter>Quelldateien\Engine\Image</Filter>
+    </ClCompile>
+    <ClCompile Include="HDRI.cpp">
+      <Filter>Quelldateien\Engine\Codecs</Filter>
+    </ClCompile>
+    <ClCompile Include="MeshCompiler.cpp">
+      <Filter>Quelldateien\API</Filter>
+    </ClCompile>
+    <ClCompile Include="LanguageCompiler.cpp">
+      <Filter>Quelldateien\API</Filter>
+    </ClCompile>
+    <ClCompile Include="ImageCompiler.cpp">
+      <Filter>Quelldateien\API</Filter>
+    </ClCompile>
+    <ClCompile Include="FontCompiler.cpp">
+      <Filter>Quelldateien\API</Filter>
+    </ClCompile>
+    <ClCompile Include="LibWriter.cpp">
+      <Filter>Quelldateien\Engine</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>
