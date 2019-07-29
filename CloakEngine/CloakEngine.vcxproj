@@ -1,0 +1,792 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="W10 Debug|Win32">
+      <Configuration>W10 Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="W10 Release|Win32">
+      <Configuration>W10 Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="W10 Debug|x64">
+      <Configuration>W10 Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="W10 Release|x64">
+      <Configuration>W10 Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="W8 Debug|Win32">
+      <Configuration>W8 Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="W8 Debug|x64">
+      <Configuration>W8 Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="W8 Release|Win32">
+      <Configuration>W8 Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="W8 Release|x64">
+      <Configuration>W8 Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{49BE57EE-620B-4E2C-9C6C-6D53C1B81053}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>CloakEngine</RootNamespace>
+    <VcpkgConfiguration Condition="'$(Configuration)' == 'W10 Release'">Release</VcpkgConfiguration>
+    <VcpkgConfiguration Condition="'$(Configuration)' == 'W10 Debug'">Debug</VcpkgConfiguration>
+    <VcpkgConfiguration Condition="'$(Configuration)' == 'W8 Release'">Release</VcpkgConfiguration>
+    <VcpkgConfiguration Condition="'$(Configuration)' == 'W8 Debug'">Debug</VcpkgConfiguration>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='W10 Debug|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+    <CLRSupport>false</CLRSupport>
+    <WindowsTargetPlatformVersion>10.0.18362.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='W8 Debug|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+    <CLRSupport>false</CLRSupport>
+    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='W10 Release|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+    <WindowsTargetPlatformVersion>10.0.18362.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='W8 Release|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='W10 Debug|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+    <CLRSupport>false</CLRSupport>
+    <WindowsTargetPlatformVersion>10.0.18362.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='W8 Debug|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+    <CLRSupport>false</CLRSupport>
+    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='W10 Release|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+    <WindowsTargetPlatformVersion>10.0.18362.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='W8 Release|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='W10 Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='W8 Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='W10 Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='W8 Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='W10 Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='W8 Debug|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='W10 Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='W8 Release|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='W10 Debug|Win32'">
+    <LinkIncremental>true</LinkIncremental>
+    <OutDir>$(SolutionDir)Binary\$(SDKIdentifier) $(TargetPlatformVersion)\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>Binary\$(SDKDisplayName)\$(SDKIdentifier) $(TargetPlatformVersion)\$(Configuration)\</IntDir>
+    <CodeAnalysisRuleSet>NativeMinimumRules.ruleset</CodeAnalysisRuleSet>
+    <RunCodeAnalysis>false</RunCodeAnalysis>
+    <EnableCppCoreCheck>false</EnableCppCoreCheck>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='W8 Debug|Win32'">
+    <LinkIncremental>true</LinkIncremental>
+    <OutDir>$(SolutionDir)Binary\$(SDKIdentifier) $(TargetPlatformVersion)\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>Binary\$(SDKDisplayName)\$(SDKIdentifier) $(TargetPlatformVersion)\$(Configuration)\</IntDir>
+    <CodeAnalysisRuleSet>NativeMinimumRules.ruleset</CodeAnalysisRuleSet>
+    <RunCodeAnalysis>false</RunCodeAnalysis>
+    <EnableCppCoreCheck>false</EnableCppCoreCheck>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='W10 Debug|x64'">
+    <LinkIncremental>true</LinkIncremental>
+    <TargetName>$(ProjectName)</TargetName>
+    <OutDir>$(SolutionDir)Binary\$(SDKIdentifier) $(TargetPlatformVersion)\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>Binary\$(SDKDisplayName)\$(SDKIdentifier) $(TargetPlatformVersion)\$(Configuration)\</IntDir>
+    <CodeAnalysisRuleSet>NativeMinimumRules.ruleset</CodeAnalysisRuleSet>
+    <RunCodeAnalysis>false</RunCodeAnalysis>
+    <EnableCppCoreCheck>false</EnableCppCoreCheck>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='W8 Debug|x64'">
+    <LinkIncremental>true</LinkIncremental>
+    <TargetName>$(ProjectName)</TargetName>
+    <OutDir>$(SolutionDir)Binary\$(SDKIdentifier) $(TargetPlatformVersion)\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>Binary\$(SDKDisplayName)\$(SDKIdentifier) $(TargetPlatformVersion)\$(Configuration)\</IntDir>
+    <CodeAnalysisRuleSet>NativeMinimumRules.ruleset</CodeAnalysisRuleSet>
+    <RunCodeAnalysis>false</RunCodeAnalysis>
+    <EnableCppCoreCheck>false</EnableCppCoreCheck>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='W10 Release|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+    <OutDir>$(SolutionDir)Binary\$(SDKIdentifier) $(TargetPlatformVersion)\$(Platform)\</OutDir>
+    <IntDir>Binary\$(SDKDisplayName)\$(SDKIdentifier) $(TargetPlatformVersion)\$(Configuration)\</IntDir>
+    <CodeAnalysisRuleSet>NativeMinimumRules.ruleset</CodeAnalysisRuleSet>
+    <RunCodeAnalysis>false</RunCodeAnalysis>
+    <EnableCppCoreCheck>false</EnableCppCoreCheck>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='W8 Release|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+    <OutDir>$(SolutionDir)Binary\$(SDKIdentifier) $(TargetPlatformVersion)\$(Platform)\</OutDir>
+    <IntDir>Binary\$(SDKDisplayName)\$(SDKIdentifier) $(TargetPlatformVersion)\$(Configuration)\</IntDir>
+    <CodeAnalysisRuleSet>NativeMinimumRules.ruleset</CodeAnalysisRuleSet>
+    <RunCodeAnalysis>false</RunCodeAnalysis>
+    <EnableCppCoreCheck>false</EnableCppCoreCheck>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='W10 Release|x64'">
+    <LinkIncremental>false</LinkIncremental>
+    <OutDir>$(SolutionDir)Binary\$(SDKIdentifier) $(TargetPlatformVersion)\$(Platform)\</OutDir>
+    <IntDir>Binary\$(SDKDisplayName)\$(SDKIdentifier) $(TargetPlatformVersion)\$(Configuration)\</IntDir>
+    <CodeAnalysisRuleSet>NativeMinimumRules.ruleset</CodeAnalysisRuleSet>
+    <RunCodeAnalysis>false</RunCodeAnalysis>
+    <EnableCppCoreCheck>false</EnableCppCoreCheck>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='W8 Release|x64'">
+    <LinkIncremental>false</LinkIncremental>
+    <OutDir>$(SolutionDir)Binary\$(SDKIdentifier) $(TargetPlatformVersion)\$(Platform)\</OutDir>
+    <IntDir>Binary\$(SDKDisplayName)\$(SDKIdentifier) $(TargetPlatformVersion)\$(Configuration)\</IntDir>
+    <CodeAnalysisRuleSet>NativeMinimumRules.ruleset</CodeAnalysisRuleSet>
+    <RunCodeAnalysis>false</RunCodeAnalysis>
+    <EnableCppCoreCheck>false</EnableCppCoreCheck>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='W10 Debug|Win32'">
+    <ClCompile>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;CLOAKENGINE_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <SDLCheck>true</SDLCheck>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)Includes;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <EnablePREfast>false</EnablePREfast>
+      <DisableSpecificWarnings>28182;26482;26495;26493;26451;6385;6386;6011;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <MultiProcessorCompilation>false</MultiProcessorCompilation>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <WholeProgramOptimization>false</WholeProgramOptimization>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <EnableParallelCodeGeneration>true</EnableParallelCodeGeneration>
+      <StringPooling>true</StringPooling>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>$(ProjectDir)Libs\$(Platform)\$(Configuration);$(ProjectDir)Libs\$(Platform);$(ProjectDir)..\Binary\$(SDKIdentifier) $(TargetPlatformVersion)\$(Platform)\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>dbghelp.lib;winmm.lib;xinput.lib;Xaudio2.lib;strmiids.lib;strmbase.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='W8 Debug|Win32'">
+    <ClCompile>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;CLOAKENGINE_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <SDLCheck>true</SDLCheck>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)Includes;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <EnablePREfast>false</EnablePREfast>
+      <DisableSpecificWarnings>28182;26482;26495;26493;26451;6385;6386;6011;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <MultiProcessorCompilation>false</MultiProcessorCompilation>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <WholeProgramOptimization>false</WholeProgramOptimization>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <EnableParallelCodeGeneration>true</EnableParallelCodeGeneration>
+      <StringPooling>true</StringPooling>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>$(ProjectDir)Libs\$(Platform)\$(Configuration);$(ProjectDir)Libs\$(Platform);$(ProjectDir)..\Binary\$(SDKIdentifier) $(TargetPlatformVersion)\$(Platform)\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>dbghelp.lib;winmm.lib;xinput.lib;Xaudio2.lib;strmiids.lib;strmbase.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='W10 Debug|x64'">
+    <ClCompile>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>_DEBUG;_WINDOWS;_USRDLL;CLOAKENGINE_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <SDLCheck>true</SDLCheck>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)Includes;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <EnablePREfast>false</EnablePREfast>
+      <DisableSpecificWarnings>28182;26482;26495;26493;26451;6385;6386;6011;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <MultiProcessorCompilation>false</MultiProcessorCompilation>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <WholeProgramOptimization>false</WholeProgramOptimization>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <EnableParallelCodeGeneration>true</EnableParallelCodeGeneration>
+      <StringPooling>true</StringPooling>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>$(ProjectDir)Libs\$(Platform)\$(Configuration);$(ProjectDir)Libs\$(Platform);$(ProjectDir)..\Binary\$(SDKIdentifier) $(TargetPlatformVersion)\$(Platform)\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>dbghelp.lib;winmm.lib;xinput.lib;Xaudio2.lib;strmiids.lib;strmbase.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='W8 Debug|x64'">
+    <ClCompile>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>_DEBUG;_WINDOWS;_USRDLL;CLOAKENGINE_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <SDLCheck>true</SDLCheck>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)Includes;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <EnablePREfast>false</EnablePREfast>
+      <DisableSpecificWarnings>28182;26482;26495;26493;26451;6385;6386;6011;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <MultiProcessorCompilation>false</MultiProcessorCompilation>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <WholeProgramOptimization>false</WholeProgramOptimization>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <EnableParallelCodeGeneration>true</EnableParallelCodeGeneration>
+      <StringPooling>true</StringPooling>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>$(ProjectDir)Libs\$(Platform)\$(Configuration);$(ProjectDir)Libs\$(Platform);$(ProjectDir)..\Binary\$(SDKIdentifier) $(TargetPlatformVersion)\$(Platform)\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>dbghelp.lib;winmm.lib;xinput.lib;Xaudio2.lib;strmiids.lib;strmbase.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='W10 Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;CLOAKENGINE_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <SDLCheck>true</SDLCheck>
+      <EnablePREfast>false</EnablePREfast>
+      <DisableSpecificWarnings>28182;26482;26495;26493;26451;6385;6386;6011;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)Includes;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <WholeProgramOptimization>true</WholeProgramOptimization>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <EnableParallelCodeGeneration>true</EnableParallelCodeGeneration>
+      <StringPooling>true</StringPooling>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalDependencies>dbghelp.lib;winmm.lib;xinput.lib;Xaudio2.lib;strmiids.lib;strmbase.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(ProjectDir)Libs\$(Platform)\$(Configuration);$(ProjectDir)Libs\$(Platform);$(ProjectDir)..\Binary\$(SDKIdentifier) $(TargetPlatformVersion)\$(Platform);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='W8 Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;CLOAKENGINE_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <SDLCheck>true</SDLCheck>
+      <EnablePREfast>false</EnablePREfast>
+      <DisableSpecificWarnings>28182;26482;26495;26493;26451;6385;6386;6011;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)Includes;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <EnableParallelCodeGeneration>true</EnableParallelCodeGeneration>
+      <StringPooling>true</StringPooling>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalDependencies>dbghelp.lib;winmm.lib;xinput.lib;Xaudio2.lib;strmiids.lib;strmbase.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(ProjectDir)Libs\$(Platform)\$(Configuration);$(ProjectDir)Libs\$(Platform);$(ProjectDir)..\Binary\$(SDKIdentifier) $(TargetPlatformVersion)\$(Platform);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='W10 Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>NDEBUG;_WINDOWS;_USRDLL;CLOAKENGINE_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <SDLCheck>true</SDLCheck>
+      <EnablePREfast>false</EnablePREfast>
+      <DisableSpecificWarnings>28182;26482;26495;26493;26451;6385;6386;6011;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)Includes;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <EnableParallelCodeGeneration>true</EnableParallelCodeGeneration>
+      <StringPooling>true</StringPooling>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalDependencies>dbghelp.lib;winmm.lib;xinput.lib;Xaudio2.lib;strmiids.lib;strmbase.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(ProjectDir)Libs\$(Platform)\$(Configuration);$(ProjectDir)Libs\$(Platform);$(ProjectDir)..\Binary\$(SDKIdentifier) $(TargetPlatformVersion)\$(Platform);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='W8 Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>NDEBUG;_WINDOWS;_USRDLL;CLOAKENGINE_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <SDLCheck>true</SDLCheck>
+      <EnablePREfast>false</EnablePREfast>
+      <DisableSpecificWarnings>28182;26482;26495;26493;26451;6385;6386;6011;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)Includes;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <EnableParallelCodeGeneration>true</EnableParallelCodeGeneration>
+      <StringPooling>true</StringPooling>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalDependencies>dbghelp.lib;winmm.lib;xinput.lib;Xaudio2.lib;strmiids.lib;strmbase.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(ProjectDir)Libs\$(Platform)\$(Configuration);$(ProjectDir)Libs\$(Platform);$(ProjectDir)..\Binary\$(SDKIdentifier) $(TargetPlatformVersion)\$(Platform);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="CloakEngine\CloakEngine.h" />
+    <ClInclude Include="CloakEngine\Components\AudioListener.h" />
+    <ClInclude Include="CloakEngine\Components\AudioSource.h" />
+    <ClInclude Include="CloakEngine\Components\Camera.h" />
+    <ClInclude Include="CloakEngine\Components\Light.h" />
+    <ClInclude Include="CloakEngine\Components\Moveable.h" />
+    <ClInclude Include="CloakEngine\Components\Position.h" />
+    <ClInclude Include="CloakEngine\Components\Render.h" />
+    <ClInclude Include="CloakEngine\Defines.h" />
+    <ClInclude Include="CloakEngine\Files\Animation.h" />
+    <ClInclude Include="CloakEngine\Files\BoundingVolume.h" />
+    <ClInclude Include="CloakEngine\Files\Buffer.h" />
+    <ClInclude Include="CloakEngine\Files\Compressor.h" />
+    <ClInclude Include="CloakEngine\Files\Configuration.h" />
+    <ClInclude Include="CloakEngine\Files\ExtendedBuffers.h" />
+    <ClInclude Include="CloakEngine\Files\FileHandler.h" />
+    <ClInclude Include="CloakEngine\Files\Font.h" />
+    <ClInclude Include="CloakEngine\Files\Hash\Blake2.h" />
+    <ClInclude Include="CloakEngine\Files\Hash\FNV.h" />
+    <ClInclude Include="CloakEngine\Files\Hash\SHA256.h" />
+    <ClInclude Include="CloakEngine\Files\Image.h" />
+    <ClInclude Include="CloakEngine\Files\Language.h" />
+    <ClInclude Include="CloakEngine\Files\Mesh.h" />
+    <ClInclude Include="CloakEngine\Files\Scene.h" />
+    <ClInclude Include="CloakEngine\Files\Shader.h" />
+    <ClInclude Include="CloakEngine\Global\Audio.h" />
+    <ClInclude Include="CloakEngine\Global\Connection.h" />
+    <ClInclude Include="CloakEngine\Global\Container\Allocator.h" />
+    <ClInclude Include="CloakEngine\Global\Container\HashTable.h" />
+    <ClInclude Include="CloakEngine\Global\Container\List.h" />
+    <ClInclude Include="CloakEngine\Global\Debug.h" />
+    <ClInclude Include="CloakEngine\Global\DebugLayer.h" />
+    <ClInclude Include="CloakEngine\Global\Draw.h" />
+    <ClInclude Include="CloakEngine\Global\Game.h" />
+    <ClInclude Include="CloakEngine\Global\GameEvents.h" />
+    <ClInclude Include="CloakEngine\Global\Graphic.h" />
+    <ClInclude Include="CloakEngine\Global\Input.h" />
+    <ClInclude Include="CloakEngine\Global\Localization.h" />
+    <ClInclude Include="CloakEngine\Global\Log.h" />
+    <ClInclude Include="CloakEngine\Global\Math.h" />
+    <ClInclude Include="CloakEngine\Global\Memory.h" />
+    <ClInclude Include="CloakEngine\Global\Mouse.h" />
+    <ClInclude Include="CloakEngine\Global\Steam.h" />
+    <ClInclude Include="CloakEngine\Global\Task.h" />
+    <ClInclude Include="CloakEngine\Global\Video.h" />
+    <ClInclude Include="CloakEngine\Helper\Color.h" />
+    <ClInclude Include="CloakEngine\Helper\EventBase.h" />
+    <ClInclude Include="CloakEngine\Helper\Logic.h" />
+    <ClInclude Include="CloakEngine\Helper\Predicate.h" />
+    <ClInclude Include="CloakEngine\Helper\Reflection.h" />
+    <ClInclude Include="CloakEngine\Helper\SavePtr.h" />
+    <ClInclude Include="CloakEngine\Helper\StateMachine.h" />
+    <ClInclude Include="CloakEngine\Helper\StringConvert.h" />
+    <ClInclude Include="CloakEngine\Helper\SyncSection.h" />
+    <ClInclude Include="CloakEngine\Helper\Types.h" />
+    <ClInclude Include="CloakEngine\Helper\UIDs.h" />
+    <ClInclude Include="CloakEngine\Interface\ListMenu.h" />
+    <ClInclude Include="CloakEngine\Interface\LoadScreen.h" />
+    <ClInclude Include="CloakEngine\Interface\Menu.h" />
+    <ClInclude Include="CloakEngine\Interface\MoveableFrame.h" />
+    <ClInclude Include="CloakEngine\Interface\ProgressBar.h" />
+    <ClInclude Include="CloakEngine\Interface\BasicGUI.h" />
+    <ClInclude Include="CloakEngine\Interface\Button.h" />
+    <ClInclude Include="CloakEngine\Interface\CheckButton.h" />
+    <ClInclude Include="CloakEngine\Interface\DropDownMenu.h" />
+    <ClInclude Include="CloakEngine\Interface\EditBox.h" />
+    <ClInclude Include="CloakEngine\Interface\Frame.h" />
+    <ClInclude Include="CloakEngine\Interface\Label.h" />
+    <ClInclude Include="CloakEngine\Interface\Slider.h" />
+    <ClInclude Include="CloakEngine\Launcher\Launcher.h" />
+    <ClInclude Include="CloakEngine\OS.h" />
+    <ClInclude Include="CloakEngine\Rendering\Allocator.h" />
+    <ClInclude Include="CloakEngine\Rendering\BasicBuffer.h" />
+    <ClInclude Include="CloakEngine\Rendering\ColorBuffer.h" />
+    <ClInclude Include="CloakEngine\Rendering\CommandSignature.h" />
+    <ClInclude Include="CloakEngine\Rendering\Context.h" />
+    <ClInclude Include="CloakEngine\Rendering\Defines.h" />
+    <ClInclude Include="CloakEngine\Rendering\DepthBuffer.h" />
+    <ClInclude Include="CloakEngine\Rendering\Manager.h" />
+    <ClInclude Include="CloakEngine\Rendering\PipelineState.h" />
+    <ClInclude Include="CloakEngine\Rendering\Query.h" />
+    <ClInclude Include="CloakEngine\Rendering\RenderPass.h" />
+    <ClInclude Include="CloakEngine\Rendering\Resource.h" />
+    <ClInclude Include="CloakEngine\Rendering\RootDescription.h" />
+    <ClInclude Include="CloakEngine\Rendering\StructuredBuffer.h" />
+    <ClInclude Include="CloakEngine\Rendering\TextureAtlas.h" />
+    <ClInclude Include="CloakEngine\World\ComponentManager.h" />
+    <ClInclude Include="CloakEngine\World\Entity.h" />
+    <ClInclude Include="CloakEngine\World\Terrain.h" />
+    <ClInclude Include="Engine\Audio\Core.h" />
+    <ClInclude Include="Engine\Audio\Resampler.h" />
+    <ClInclude Include="Engine\BitMap.h" />
+    <ClInclude Include="Engine\Compress\AAC.h" />
+    <ClInclude Include="Engine\Compress\LZ4.h" />
+    <ClInclude Include="Engine\Compress\NetBuffer\HTTPBuffer.h" />
+    <ClInclude Include="Engine\Compress\NetBuffer\SecureNet.h" />
+    <ClInclude Include="Engine\Compress\NetBuffer\TCPBuffer.h" />
+    <ClInclude Include="Engine\Compress\NetBuffer\UDPBuffer.h" />
+    <ClInclude Include="Engine\Compress\Huffman.h" />
+    <ClInclude Include="Engine\Compress\LZC.h" />
+    <ClInclude Include="Engine\Compress\LZW.h" />
+    <ClInclude Include="Engine\Compress\UTF.h" />
+    <ClInclude Include="Engine\Compress\ZLIB.h" />
+    <ClInclude Include="Engine\FileLoader.h" />
+    <ClInclude Include="Engine\FillVector.h" />
+    <ClInclude Include="Engine\FlipVector.h" />
+    <ClInclude Include="Engine\Graphic\Core.h" />
+    <ClInclude Include="Engine\Graphic\DefaultRenderPass.h" />
+    <ClInclude Include="Engine\Graphic\DefaultShaderLib.h" />
+    <ClInclude Include="Engine\Graphic\GraphicLock.h" />
+    <ClInclude Include="Engine\Hash.h" />
+    <ClInclude Include="Engine\Input\Gamepad.h" />
+    <ClInclude Include="Engine\Input\Keyboard.h" />
+    <ClInclude Include="Engine\Launcher.h" />
+    <ClInclude Include="Engine\LinkedList.h" />
+    <ClInclude Include="Engine\Physics\Core.h" />
+    <ClInclude Include="Engine\Steam\Achievements.h" />
+    <ClInclude Include="Engine\Steam\Core.h" />
+    <ClInclude Include="Engine\Steam\Stats.h" />
+    <ClInclude Include="Engine\Thread.h" />
+    <ClInclude Include="Engine\WindowHandler.h" />
+    <ClInclude Include="Engine\WorldStreamer.h" />
+    <ClInclude Include="Implementation\Components\Camera.h" />
+    <ClInclude Include="Implementation\Components\GraphicUpdate.h" />
+    <ClInclude Include="Implementation\Components\Light.h" />
+    <ClInclude Include="Implementation\Components\Moveable.h" />
+    <ClInclude Include="Implementation\Components\Position.h" />
+    <ClInclude Include="Implementation\Components\Render.h" />
+    <ClInclude Include="Implementation\Files\BoundingVolume.h" />
+    <ClInclude Include="Implementation\Files\Buffer.h" />
+    <ClInclude Include="Implementation\Files\Compressor.h" />
+    <ClInclude Include="Implementation\Files\Configuration.h" />
+    <ClInclude Include="Implementation\Files\FileHandler.h" />
+    <ClInclude Include="Implementation\Files\FileIOBuffer.h" />
+    <ClInclude Include="Implementation\Files\Font.h" />
+    <ClInclude Include="Implementation\Files\Image.h" />
+    <ClInclude Include="Implementation\Files\Language.h" />
+    <ClInclude Include="Implementation\Files\Mesh.h" />
+    <ClInclude Include="Implementation\Files\Scene.h" />
+    <ClInclude Include="Implementation\Files\Shader.h" />
+    <ClInclude Include="Implementation\Global\Audio.h" />
+    <ClInclude Include="Implementation\Global\Connection.h" />
+    <ClInclude Include="Implementation\Global\Debug.h" />
+    <ClInclude Include="Implementation\Global\DebugLayer.h" />
+    <ClInclude Include="Implementation\Global\Game.h" />
+    <ClInclude Include="Implementation\Global\Graphic.h" />
+    <ClInclude Include="Implementation\Global\Input.h" />
+    <ClInclude Include="Implementation\Global\Localization.h" />
+    <ClInclude Include="Implementation\Global\Log.h" />
+    <ClInclude Include="Implementation\Global\Math.h" />
+    <ClInclude Include="Implementation\Global\Memory.h" />
+    <ClInclude Include="Implementation\Global\Mouse.h" />
+    <ClInclude Include="Implementation\Global\Steam.h" />
+    <ClInclude Include="Implementation\Global\Task.h" />
+    <ClInclude Include="Implementation\Global\Video.h" />
+    <ClInclude Include="Implementation\Helper\EventBase.h" />
+    <ClInclude Include="Implementation\Helper\SavePtr.h" />
+    <ClInclude Include="Implementation\Helper\StateMachine.h" />
+    <ClInclude Include="Implementation\Helper\SyncSection.h" />
+    <ClInclude Include="Implementation\Interface\BasicGUI.h" />
+    <ClInclude Include="Implementation\Interface\Button.h" />
+    <ClInclude Include="Implementation\Interface\CheckButton.h" />
+    <ClInclude Include="Implementation\Interface\DropDownMenu.h" />
+    <ClInclude Include="Implementation\Interface\EditBox.h" />
+    <ClInclude Include="Implementation\Interface\Frame.h" />
+    <ClInclude Include="Implementation\Interface\Label.h" />
+    <ClInclude Include="Implementation\Interface\ListMenu.h" />
+    <ClInclude Include="Implementation\Interface\LoadScreen.h" />
+    <ClInclude Include="Implementation\Interface\MovableFrame.h" />
+    <ClInclude Include="Implementation\Interface\ProgressBar.h" />
+    <ClInclude Include="Implementation\Interface\RayTestContext.h" />
+    <ClInclude Include="Implementation\Interface\Slider.h" />
+    <ClInclude Include="Implementation\Launcher\Launcher.h" />
+    <ClInclude Include="Implementation\OS.h" />
+    <ClInclude Include="Implementation\Rendering\Allocator.h" />
+    <ClInclude Include="Implementation\Rendering\BasicBuffer.h" />
+    <ClInclude Include="Implementation\Rendering\ColorBuffer.h" />
+    <ClInclude Include="Implementation\Rendering\Context.h" />
+    <ClInclude Include="Implementation\Rendering\Defines.h" />
+    <ClInclude Include="Implementation\Rendering\DepthBuffer.h" />
+    <ClInclude Include="Implementation\Rendering\DescriptorHandle.h" />
+    <ClInclude Include="Implementation\Rendering\Deserialization.h" />
+    <ClInclude Include="Implementation\Rendering\Device.h" />
+    <ClInclude Include="Implementation\Rendering\DX12\Allocator.h" />
+    <ClInclude Include="Implementation\Rendering\DX12\BasicBuffer.h" />
+    <ClInclude Include="Implementation\Rendering\DX12\Casting.h" />
+    <ClInclude Include="Implementation\Rendering\DX12\ColorBuffer.h" />
+    <ClInclude Include="Implementation\Rendering\DX12\Context.h" />
+    <ClInclude Include="Implementation\Rendering\DX12\Defines.h" />
+    <ClInclude Include="Implementation\Rendering\DX12\DepthBuffer.h" />
+    <ClInclude Include="Implementation\Rendering\DX12\Device.h" />
+    <ClInclude Include="Implementation\Rendering\DX12\Lib.h" />
+    <ClInclude Include="Implementation\Rendering\DX12\Manager.h" />
+    <ClInclude Include="Implementation\Rendering\DX12\PipelineState.h" />
+    <ClInclude Include="Implementation\Rendering\DX12\Query.h" />
+    <ClInclude Include="Implementation\Rendering\DX12\Queue.h" />
+    <ClInclude Include="Implementation\Rendering\DX12\Resource.h" />
+    <ClInclude Include="Implementation\Rendering\DX12\RootSignature.h" />
+    <ClInclude Include="Implementation\Rendering\DX12\Sampler.h" />
+    <ClInclude Include="Implementation\Rendering\DX12\StructuredBuffer.h" />
+    <ClInclude Include="Implementation\Rendering\DX12\SwapChain.h" />
+    <ClInclude Include="Implementation\Rendering\DX12\TextureAtlas.h" />
+    <ClInclude Include="Implementation\Rendering\DX12\VideoEncoder.h" />
+    <ClInclude Include="Implementation\Rendering\Manager.h" />
+    <ClInclude Include="Implementation\Rendering\PipelineState.h" />
+    <ClInclude Include="Implementation\Rendering\Query.h" />
+    <ClInclude Include="Implementation\Rendering\Queue.h" />
+    <ClInclude Include="Implementation\Rendering\RenderWorker.h" />
+    <ClInclude Include="Implementation\Rendering\Resource.h" />
+    <ClInclude Include="Implementation\Rendering\RootSignature.h" />
+    <ClInclude Include="Implementation\Rendering\Sampler.h" />
+    <ClInclude Include="Implementation\Rendering\Adapter.h" />
+    <ClInclude Include="Implementation\Rendering\StructuredBuffer.h" />
+    <ClInclude Include="Implementation\Rendering\SwapChain.h" />
+    <ClInclude Include="Implementation\Rendering\VertexData.h" />
+    <ClInclude Include="Implementation\Rendering\VideoEncoder.h" />
+    <ClInclude Include="Implementation\World\ComponentManager.h" />
+    <ClInclude Include="Implementation\World\Entity.h" />
+    <ClInclude Include="stdafx.h" />
+    <ClInclude Include="targetver.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="AAC.cpp" />
+    <ClCompile Include="Achievements.cpp" />
+    <ClCompile Include="Allocator.cpp" />
+    <ClCompile Include="AudioResampler.cpp" />
+    <ClCompile Include="Blake2.cpp" />
+    <ClCompile Include="BoundingVolume.cpp" />
+    <ClCompile Include="Buffer.cpp" />
+    <ClCompile Include="CameraComponent.cpp" />
+    <ClCompile Include="ComponentManager.cpp" />
+    <ClCompile Include="Connection.cpp" />
+    <ClCompile Include="Context.cpp" />
+    <ClCompile Include="AudioCore.cpp" />
+    <ClCompile Include="DataTypes.cpp" />
+    <ClCompile Include="DebugLayer.cpp" />
+    <ClCompile Include="DefaultRenderPass.cpp" />
+    <ClCompile Include="DefaultShaderLib.cpp" />
+    <ClCompile Include="DX12Query.cpp" />
+    <ClCompile Include="DX12Queue.cpp" />
+    <ClCompile Include="DX12Sampler.cpp" />
+    <ClCompile Include="Entity.cpp" />
+    <ClCompile Include="FileIOBuffer.cpp" />
+    <ClCompile Include="Gamepad.cpp" />
+    <ClCompile Include="HTTPBuffer.cpp" />
+    <ClCompile Include="Keyboard.cpp" />
+    <ClCompile Include="LightComponent.cpp" />
+    <ClCompile Include="LZ4.cpp" />
+    <ClCompile Include="Memory.cpp" />
+    <ClCompile Include="MoveabeComponent.cpp" />
+    <ClCompile Include="PhysicsCore.cpp" />
+    <ClCompile Include="PositionComponent.cpp" />
+    <ClCompile Include="RayTestContext.cpp" />
+    <ClCompile Include="RenderComponent.cpp" />
+    <ClCompile Include="RootDescription.cpp" />
+    <ClCompile Include="Scene.cpp" />
+    <ClCompile Include="SecureNet.cpp" />
+    <ClCompile Include="DX12Allocator.cpp" />
+    <ClCompile Include="Audio.cpp" />
+    <ClCompile Include="DX12BasicBuffer.cpp" />
+    <ClCompile Include="BasicGUI.cpp" />
+    <ClCompile Include="BitMap.cpp" />
+    <ClCompile Include="Button.cpp" />
+    <ClCompile Include="DX12Casting.cpp" />
+    <ClCompile Include="CheckButton.cpp" />
+    <ClCompile Include="CloakEngine.cpp" />
+    <ClCompile Include="Color.cpp" />
+    <ClCompile Include="DX12ColorBuffer.cpp" />
+    <ClCompile Include="DX12Device.cpp" />
+    <ClCompile Include="DX12Lib.cpp" />
+    <ClCompile Include="DX12Manager.cpp" />
+    <ClCompile Include="Compressor.cpp" />
+    <ClCompile Include="Configuration.cpp" />
+    <ClCompile Include="DX12Context.cpp" />
+    <ClCompile Include="GraphicCore.cpp" />
+    <ClCompile Include="Debug.cpp" />
+    <ClCompile Include="Defines.cpp" />
+    <ClCompile Include="DX12DepthBuffer.cpp" />
+    <ClCompile Include="DescriptorHandle.cpp" />
+    <ClCompile Include="dllmain.cpp">
+      <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='W10 Debug|Win32'">false</CompileAsManaged>
+      <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='W8 Debug|Win32'">false</CompileAsManaged>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='W10 Debug|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='W8 Debug|Win32'">
+      </PrecompiledHeader>
+      <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='W10 Debug|x64'">false</CompileAsManaged>
+      <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='W8 Debug|x64'">false</CompileAsManaged>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='W10 Debug|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='W8 Debug|x64'">
+      </PrecompiledHeader>
+      <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='W10 Release|Win32'">false</CompileAsManaged>
+      <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='W8 Release|Win32'">false</CompileAsManaged>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='W10 Release|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='W8 Release|Win32'">
+      </PrecompiledHeader>
+      <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='W10 Release|x64'">false</CompileAsManaged>
+      <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='W8 Release|x64'">false</CompileAsManaged>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='W10 Release|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='W8 Release|x64'">
+      </PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="DropDownMenu.cpp" />
+    <ClCompile Include="DX12SwapChain.cpp" />
+    <ClCompile Include="DX12VideoEncoder.cpp" />
+    <ClCompile Include="EditBox.cpp" />
+    <ClCompile Include="FileHandler.cpp" />
+    <ClCompile Include="FileLoader.cpp" />
+    <ClCompile Include="Font.cpp" />
+    <ClCompile Include="Frame.cpp" />
+    <ClCompile Include="Game.cpp" />
+    <ClCompile Include="GraphicLock.cpp" />
+    <ClCompile Include="Image.cpp" />
+    <ClCompile Include="Launcher.cpp" />
+    <ClCompile Include="LauncherManager.cpp" />
+    <ClCompile Include="ListMenu.cpp" />
+    <ClCompile Include="LoadScreen.cpp" />
+    <ClCompile Include="LZC.cpp" />
+    <ClCompile Include="LZW.cpp" />
+    <ClCompile Include="Manager.cpp" />
+    <ClCompile Include="Menu.cpp" />
+    <ClCompile Include="Mesh.cpp" />
+    <ClCompile Include="DX12PipelineState.cpp" />
+    <ClCompile Include="MovableFrame.cpp" />
+    <ClCompile Include="ProgressBar.cpp" />
+    <ClCompile Include="DX12Resource.cpp" />
+    <ClCompile Include="DX12RootSignature.cpp" />
+    <ClCompile Include="SHA256.cpp" />
+    <ClCompile Include="StateMachine.cpp" />
+    <ClCompile Include="Steam.cpp" />
+    <ClCompile Include="StringConvert.cpp" />
+    <ClCompile Include="DX12StructuredBuffer.cpp" />
+    <ClCompile Include="Task.cpp" />
+    <ClCompile Include="TCPBuffer.cpp" />
+    <ClCompile Include="UDPBuffer.cpp" />
+    <ClCompile Include="UID.cpp" />
+    <ClCompile Include="Graphic.cpp" />
+    <ClCompile Include="Huffman.cpp" />
+    <ClCompile Include="Input.cpp" />
+    <ClCompile Include="Label.cpp" />
+    <ClCompile Include="Language.cpp" />
+    <ClCompile Include="Localization.cpp" />
+    <ClCompile Include="Log.cpp" />
+    <ClCompile Include="Logic.cpp" />
+    <ClCompile Include="Math.cpp" />
+    <ClCompile Include="Mouse.cpp" />
+    <ClCompile Include="OS.cpp" />
+    <ClCompile Include="SavePtr.cpp" />
+    <ClCompile Include="Shader.cpp" />
+    <ClCompile Include="Slider.cpp" />
+    <ClCompile Include="stdafx.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='W10 Debug|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='W8 Debug|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='W10 Debug|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='W8 Debug|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='W10 Release|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='W8 Release|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='W10 Release|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='W8 Release|x64'">Create</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="SyncSection.cpp" />
+    <ClCompile Include="Thread.cpp" />
+    <ClCompile Include="UTF.cpp" />
+    <ClCompile Include="VertexData.cpp" />
+    <ClCompile Include="Video.cpp" />
+    <ClCompile Include="WindowHandler.cpp" />
+    <ClCompile Include="WorldStreamer.cpp" />
+    <ClCompile Include="ZLIB.cpp" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

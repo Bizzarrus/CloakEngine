@@ -1,0 +1,1170 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Quelldateien">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Headerdateien">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Ressourcendateien">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Headerdateien\API">
+      <UniqueIdentifier>{b97a6ee9-8c47-4d1b-8479-1b0d2f5e5302}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Headerdateien\Engine">
+      <UniqueIdentifier>{b020713e-68e6-4b6d-a594-98d55bfbc32d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Quelldateien\API">
+      <UniqueIdentifier>{db22ccc2-d50a-4433-b54d-297db86cc5ab}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Quelldateien\Engine">
+      <UniqueIdentifier>{493fd1fe-43f5-4f2d-98bc-c90ace4c7813}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Quelldateien\API\Global">
+      <UniqueIdentifier>{bc4a31f6-93cc-4e49-867e-25d91729ba7e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Quelldateien\API\Helper">
+      <UniqueIdentifier>{019d75d6-0345-445e-9bbc-6a9dde8c0445}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Quelldateien\API\Interface">
+      <UniqueIdentifier>{8474d46d-3f3a-44a5-9f7e-2613e3a28122}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Headerdateien\Implementation">
+      <UniqueIdentifier>{4dd0d5d3-cb42-443d-94d7-c246567c177c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Headerdateien\Implementation\Global">
+      <UniqueIdentifier>{9769736b-96b5-44b8-b1ab-1edf00d688f5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Headerdateien\Implementation\Helper">
+      <UniqueIdentifier>{ae8423b9-d63e-41f2-9444-1a1bfec85711}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Headerdateien\Implementation\Interface">
+      <UniqueIdentifier>{7fe0b0b9-7088-47bc-a5a5-f896020d7bde}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Headerdateien\Implementation\Files">
+      <UniqueIdentifier>{525ef2a3-c1a6-4340-b78b-e5229a1ca491}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Quelldateien\API\Files">
+      <UniqueIdentifier>{abf705f5-08ea-4805-9aae-b09087a9d8f6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Quelldateien\Engine\Graphic">
+      <UniqueIdentifier>{92109e51-7aa4-4ff0-b4eb-26796939f935}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Headerdateien\Engine\Graphic">
+      <UniqueIdentifier>{4a7d95f6-8f9c-4f13-b5ee-e6515c4829ad}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Headerdateien\Engine\Compress">
+      <UniqueIdentifier>{18793569-12db-4d01-9813-f369165aecb3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Quelldateien\Engine\Compress">
+      <UniqueIdentifier>{95466be2-6400-4b5d-81df-63b41226b40d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Headerdateien\API\Files">
+      <UniqueIdentifier>{d5f8214e-1a54-4f42-97fd-d663d4f4b5ac}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Headerdateien\API\Global">
+      <UniqueIdentifier>{8ff57cdd-0220-46a7-bdcb-4cff9ff6bc04}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Headerdateien\API\Helper">
+      <UniqueIdentifier>{31f5a744-a7dd-4ae0-bbaa-9b0f4b784222}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Headerdateien\API\Interface">
+      <UniqueIdentifier>{4389e501-b5e6-4698-a7eb-f1c57c63bd54}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Headerdateien\API\Rendering">
+      <UniqueIdentifier>{083aa4f3-6272-43e3-972a-1bcbb56d4bed}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Quelldateien\API\Rendering">
+      <UniqueIdentifier>{5013c156-924d-45b6-8f73-d9457a27a217}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Headerdateien\Implementation\Rendering">
+      <UniqueIdentifier>{49a03dd0-8005-4dd2-b0ba-dd9a520e02a5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Headerdateien\Engine\Steam">
+      <UniqueIdentifier>{6cc0bf8f-d060-4b34-9f0b-8d5af1d08a05}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Quelldateien\Engine\Steam">
+      <UniqueIdentifier>{31f2ea01-518d-4d3c-a098-59fb69a23c22}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Headerdateien\Implementation\Rendering\DX12">
+      <UniqueIdentifier>{31a452b9-92ad-4541-8939-ada91dd2df6e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Quelldateien\API\Rendering\DX12">
+      <UniqueIdentifier>{aff70896-1be8-4b5c-981e-20d1109aaf20}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Headerdateien\API\Launcher">
+      <UniqueIdentifier>{cc7ce798-ee82-4e38-90bf-0376c1a11efb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Headerdateien\Implementation\Launcher">
+      <UniqueIdentifier>{6e89dc5f-c448-4f97-ae05-c2a93bbc2b20}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Quelldateien\API\Launcher">
+      <UniqueIdentifier>{af3687ee-fd66-4993-85ee-71df2b89bd4d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Headerdateien\Engine\Compress\NetBuffer">
+      <UniqueIdentifier>{8111aeca-b9b8-4d30-a200-756476b79aea}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Quelldateien\Engine\Compress\NetBuffer">
+      <UniqueIdentifier>{b5779376-7ca5-46dd-8b19-475e457b8b15}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Headerdateien\API\Files\Hash">
+      <UniqueIdentifier>{fd753d65-a9cb-4209-83be-6e0b7ac617f3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Quelldateien\API\Files\Hash">
+      <UniqueIdentifier>{0cffbb42-67fd-4283-989a-51b2c1cf27d3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Headerdateien\API\World">
+      <UniqueIdentifier>{6ceeb46e-8794-496f-b179-f645115bfe8c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Headerdateien\Implementation\World">
+      <UniqueIdentifier>{ed7682d6-c182-4e34-9b4b-a9fc4c38501c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Quelldateien\API\World">
+      <UniqueIdentifier>{f2e27f6f-01d7-4582-951e-687182c55cce}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Headerdateien\Engine\Physics">
+      <UniqueIdentifier>{48e2b4b9-3c50-465b-9264-2a92f7f0e051}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Quelldateien\Engine\Physics">
+      <UniqueIdentifier>{460c0a72-e05b-4234-b85a-9cbfd11da28e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Headerdateien\Engine\Input">
+      <UniqueIdentifier>{f4ebb4df-a60c-4daa-9f3e-a802fe21602e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Quelldateien\Engine\Input">
+      <UniqueIdentifier>{f56f3028-30bd-4e2c-bb16-dea0be0b14fe}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Headerdateien\API\Components">
+      <UniqueIdentifier>{522d62ca-67fd-42e8-8dc4-f3a7e081e31d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Headerdateien\Implementation\Components">
+      <UniqueIdentifier>{4acbefef-33f9-4d99-945e-5034fc653041}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Quelldateien\API\Components">
+      <UniqueIdentifier>{be9b568c-8b59-47a6-b576-3dcb3002021e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Quelldateien\Engine\Audio">
+      <UniqueIdentifier>{6e900391-f70c-4598-9c8a-603a21fff057}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Headerdateien\Engine\Audio">
+      <UniqueIdentifier>{f9dc3722-0591-41d7-8e60-89b08548064c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Headerdateien\API\Global\Container">
+      <UniqueIdentifier>{46fdf71b-098b-429a-8be8-425956fbe44a}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="stdafx.h">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
+    <ClInclude Include="targetver.h">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
+    <ClInclude Include="Implementation\Helper\SavePtr.h">
+      <Filter>Headerdateien\Implementation\Helper</Filter>
+    </ClInclude>
+    <ClInclude Include="Implementation\Global\Game.h">
+      <Filter>Headerdateien\Implementation\Global</Filter>
+    </ClInclude>
+    <ClInclude Include="Implementation\Helper\SyncSection.h">
+      <Filter>Headerdateien\Implementation\Helper</Filter>
+    </ClInclude>
+    <ClInclude Include="Implementation\Global\Debug.h">
+      <Filter>Headerdateien\Implementation\Global</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Thread.h">
+      <Filter>Headerdateien\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\WindowHandler.h">
+      <Filter>Headerdateien\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="Implementation\Files\Compressor.h">
+      <Filter>Headerdateien\Implementation\Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Implementation\Interface\BasicGUI.h">
+      <Filter>Headerdateien\Implementation\Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="Implementation\Global\Input.h">
+      <Filter>Headerdateien\Implementation\Global</Filter>
+    </ClInclude>
+    <ClInclude Include="Implementation\Global\Log.h">
+      <Filter>Headerdateien\Implementation\Global</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\BitMap.h">
+      <Filter>Headerdateien\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="Implementation\Interface\Button.h">
+      <Filter>Headerdateien\Implementation\Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="Implementation\Interface\Frame.h">
+      <Filter>Headerdateien\Implementation\Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="Implementation\Interface\Label.h">
+      <Filter>Headerdateien\Implementation\Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="Implementation\Interface\CheckButton.h">
+      <Filter>Headerdateien\Implementation\Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="Implementation\Interface\DropDownMenu.h">
+      <Filter>Headerdateien\Implementation\Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Graphic\Core.h">
+      <Filter>Headerdateien\Engine\Graphic</Filter>
+    </ClInclude>
+    <ClInclude Include="Implementation\Global\Graphic.h">
+      <Filter>Headerdateien\Implementation\Global</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\FileLoader.h">
+      <Filter>Headerdateien\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\FlipVector.h">
+      <Filter>Headerdateien\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="Implementation\Files\Shader.h">
+      <Filter>Headerdateien\Implementation\Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CloakEngine\CloakEngine.h">
+      <Filter>Headerdateien\API</Filter>
+    </ClInclude>
+    <ClInclude Include="CloakEngine\Defines.h">
+      <Filter>Headerdateien\API</Filter>
+    </ClInclude>
+    <ClInclude Include="CloakEngine\Interface\BasicGUI.h">
+      <Filter>Headerdateien\API\Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="CloakEngine\Interface\Button.h">
+      <Filter>Headerdateien\API\Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="CloakEngine\Interface\CheckButton.h">
+      <Filter>Headerdateien\API\Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="CloakEngine\Interface\DropDownMenu.h">
+      <Filter>Headerdateien\API\Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="CloakEngine\Interface\EditBox.h">
+      <Filter>Headerdateien\API\Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="CloakEngine\Interface\Frame.h">
+      <Filter>Headerdateien\API\Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="CloakEngine\Interface\Label.h">
+      <Filter>Headerdateien\API\Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="CloakEngine\Interface\Slider.h">
+      <Filter>Headerdateien\API\Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="CloakEngine\Helper\Logic.h">
+      <Filter>Headerdateien\API\Helper</Filter>
+    </ClInclude>
+    <ClInclude Include="CloakEngine\Helper\SavePtr.h">
+      <Filter>Headerdateien\API\Helper</Filter>
+    </ClInclude>
+    <ClInclude Include="CloakEngine\Helper\SyncSection.h">
+      <Filter>Headerdateien\API\Helper</Filter>
+    </ClInclude>
+    <ClInclude Include="CloakEngine\Helper\UIDs.h">
+      <Filter>Headerdateien\API\Helper</Filter>
+    </ClInclude>
+    <ClInclude Include="CloakEngine\Helper\Color.h">
+      <Filter>Headerdateien\API\Helper</Filter>
+    </ClInclude>
+    <ClInclude Include="CloakEngine\Helper\EventBase.h">
+      <Filter>Headerdateien\API\Helper</Filter>
+    </ClInclude>
+    <ClInclude Include="CloakEngine\Global\Game.h">
+      <Filter>Headerdateien\API\Global</Filter>
+    </ClInclude>
+    <ClInclude Include="CloakEngine\Global\Graphic.h">
+      <Filter>Headerdateien\API\Global</Filter>
+    </ClInclude>
+    <ClInclude Include="CloakEngine\Global\Input.h">
+      <Filter>Headerdateien\API\Global</Filter>
+    </ClInclude>
+    <ClInclude Include="CloakEngine\Global\Localization.h">
+      <Filter>Headerdateien\API\Global</Filter>
+    </ClInclude>
+    <ClInclude Include="CloakEngine\Global\Log.h">
+      <Filter>Headerdateien\API\Global</Filter>
+    </ClInclude>
+    <ClInclude Include="CloakEngine\Global\Math.h">
+      <Filter>Headerdateien\API\Global</Filter>
+    </ClInclude>
+    <ClInclude Include="CloakEngine\Global\Debug.h">
+      <Filter>Headerdateien\API\Global</Filter>
+    </ClInclude>
+    <ClInclude Include="CloakEngine\Files\Compressor.h">
+      <Filter>Headerdateien\API\Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CloakEngine\Files\Font.h">
+      <Filter>Headerdateien\API\Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CloakEngine\Files\Image.h">
+      <Filter>Headerdateien\API\Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CloakEngine\Files\Shader.h">
+      <Filter>Headerdateien\API\Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Implementation\Global\Localization.h">
+      <Filter>Headerdateien\Implementation\Global</Filter>
+    </ClInclude>
+    <ClInclude Include="CloakEngine\Files\Language.h">
+      <Filter>Headerdateien\API\Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CloakEngine\Files\FileHandler.h">
+      <Filter>Headerdateien\API\Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Implementation\Files\FileHandler.h">
+      <Filter>Headerdateien\Implementation\Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Implementation\Files\Language.h">
+      <Filter>Headerdateien\Implementation\Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Implementation\Interface\EditBox.h">
+      <Filter>Headerdateien\Implementation\Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="Implementation\Interface\Slider.h">
+      <Filter>Headerdateien\Implementation\Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="CloakEngine\Global\Mouse.h">
+      <Filter>Headerdateien\API\Global</Filter>
+    </ClInclude>
+    <ClInclude Include="Implementation\Global\Mouse.h">
+      <Filter>Headerdateien\Implementation\Global</Filter>
+    </ClInclude>
+    <ClInclude Include="CloakEngine\OS.h">
+      <Filter>Headerdateien\API</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Compress\Huffman.h">
+      <Filter>Headerdateien\Engine\Compress</Filter>
+    </ClInclude>
+    <ClInclude Include="CloakEngine\Files\Configuration.h">
+      <Filter>Headerdateien\API\Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Implementation\Files\Configuration.h">
+      <Filter>Headerdateien\Implementation\Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CloakEngine\Global\Audio.h">
+      <Filter>Headerdateien\API\Global</Filter>
+    </ClInclude>
+    <ClInclude Include="Implementation\Global\Audio.h">
+      <Filter>Headerdateien\Implementation\Global</Filter>
+    </ClInclude>
+    <ClInclude Include="Implementation\OS.h">
+      <Filter>Headerdateien\Implementation</Filter>
+    </ClInclude>
+    <ClInclude Include="Implementation\Files\Image.h">
+      <Filter>Headerdateien\Implementation\Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Implementation\Files\Font.h">
+      <Filter>Headerdateien\Implementation\Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CloakEngine\Global\Draw.h">
+      <Filter>Headerdateien\API\Global</Filter>
+    </ClInclude>
+    <ClInclude Include="CloakEngine\Rendering\Context.h">
+      <Filter>Headerdateien\API\Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="CloakEngine\Rendering\Resource.h">
+      <Filter>Headerdateien\API\Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="CloakEngine\Rendering\Defines.h">
+      <Filter>Headerdateien\API\Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="CloakEngine\Rendering\Allocator.h">
+      <Filter>Headerdateien\API\Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Hash.h">
+      <Filter>Headerdateien\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Graphic\GraphicLock.h">
+      <Filter>Headerdateien\Engine\Graphic</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Launcher.h">
+      <Filter>Headerdateien\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="CloakEngine\Rendering\BasicBuffer.h">
+      <Filter>Headerdateien\API\Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="CloakEngine\Rendering\ColorBuffer.h">
+      <Filter>Headerdateien\API\Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="CloakEngine\Rendering\DepthBuffer.h">
+      <Filter>Headerdateien\API\Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="CloakEngine\Rendering\StructuredBuffer.h">
+      <Filter>Headerdateien\API\Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="CloakEngine\Files\Mesh.h">
+      <Filter>Headerdateien\API\Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Implementation\Files\Mesh.h">
+      <Filter>Headerdateien\Implementation\Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Implementation\Helper\EventBase.h">
+      <Filter>Headerdateien\Implementation\Helper</Filter>
+    </ClInclude>
+    <ClInclude Include="CloakEngine\Helper\StringConvert.h">
+      <Filter>Headerdateien\API\Helper</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\LinkedList.h">
+      <Filter>Headerdateien\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="CloakEngine\Helper\StateMachine.h">
+      <Filter>Headerdateien\API\Helper</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Compress\LZC.h">
+      <Filter>Headerdateien\Engine\Compress</Filter>
+    </ClInclude>
+    <ClInclude Include="CloakEngine\Interface\ProgressBar.h">
+      <Filter>Headerdateien\API\Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="Implementation\Interface\ProgressBar.h">
+      <Filter>Headerdateien\Implementation\Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="CloakEngine\Global\Steam.h">
+      <Filter>Headerdateien\API\Global</Filter>
+    </ClInclude>
+    <ClInclude Include="Implementation\Global\Steam.h">
+      <Filter>Headerdateien\Implementation\Global</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Steam\Achievements.h">
+      <Filter>Headerdateien\Engine\Steam</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Steam\Core.h">
+      <Filter>Headerdateien\Engine\Steam</Filter>
+    </ClInclude>
+    <ClInclude Include="CloakEngine\Interface\LoadScreen.h">
+      <Filter>Headerdateien\API\Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="Implementation\Interface\LoadScreen.h">
+      <Filter>Headerdateien\Implementation\Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="CloakEngine\Global\Video.h">
+      <Filter>Headerdateien\API\Global</Filter>
+    </ClInclude>
+    <ClInclude Include="Implementation\Global\Video.h">
+      <Filter>Headerdateien\Implementation\Global</Filter>
+    </ClInclude>
+    <ClInclude Include="CloakEngine\Global\GameEvents.h">
+      <Filter>Headerdateien\API\Global</Filter>
+    </ClInclude>
+    <ClInclude Include="Implementation\Rendering\DX12\Device.h">
+      <Filter>Headerdateien\Implementation\Rendering\DX12</Filter>
+    </ClInclude>
+    <ClInclude Include="Implementation\Rendering\Device.h">
+      <Filter>Headerdateien\Implementation\Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="Implementation\Rendering\Defines.h">
+      <Filter>Headerdateien\Implementation\Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="Implementation\Rendering\Manager.h">
+      <Filter>Headerdateien\Implementation\Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="Implementation\Rendering\Resource.h">
+      <Filter>Headerdateien\Implementation\Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="Implementation\Rendering\Context.h">
+      <Filter>Headerdateien\Implementation\Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="Implementation\Rendering\RootSignature.h">
+      <Filter>Headerdateien\Implementation\Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="Implementation\Rendering\PipelineState.h">
+      <Filter>Headerdateien\Implementation\Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="Implementation\Rendering\BasicBuffer.h">
+      <Filter>Headerdateien\Implementation\Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="Implementation\Rendering\ColorBuffer.h">
+      <Filter>Headerdateien\Implementation\Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="Implementation\Rendering\DepthBuffer.h">
+      <Filter>Headerdateien\Implementation\Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="Implementation\Rendering\StructuredBuffer.h">
+      <Filter>Headerdateien\Implementation\Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="Implementation\Rendering\SwapChain.h">
+      <Filter>Headerdateien\Implementation\Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="Implementation\Rendering\VertexData.h">
+      <Filter>Headerdateien\Implementation\Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="Implementation\Rendering\Allocator.h">
+      <Filter>Headerdateien\Implementation\Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="Implementation\Rendering\DescriptorHandle.h">
+      <Filter>Headerdateien\Implementation\Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="Implementation\Rendering\DX12\Context.h">
+      <Filter>Headerdateien\Implementation\Rendering\DX12</Filter>
+    </ClInclude>
+    <ClInclude Include="Implementation\Rendering\DX12\Allocator.h">
+      <Filter>Headerdateien\Implementation\Rendering\DX12</Filter>
+    </ClInclude>
+    <ClInclude Include="Implementation\Rendering\DX12\BasicBuffer.h">
+      <Filter>Headerdateien\Implementation\Rendering\DX12</Filter>
+    </ClInclude>
+    <ClInclude Include="Implementation\Rendering\DX12\ColorBuffer.h">
+      <Filter>Headerdateien\Implementation\Rendering\DX12</Filter>
+    </ClInclude>
+    <ClInclude Include="Implementation\Rendering\DX12\DepthBuffer.h">
+      <Filter>Headerdateien\Implementation\Rendering\DX12</Filter>
+    </ClInclude>
+    <ClInclude Include="Implementation\Rendering\DX12\Manager.h">
+      <Filter>Headerdateien\Implementation\Rendering\DX12</Filter>
+    </ClInclude>
+    <ClInclude Include="Implementation\Rendering\DX12\PipelineState.h">
+      <Filter>Headerdateien\Implementation\Rendering\DX12</Filter>
+    </ClInclude>
+    <ClInclude Include="Implementation\Rendering\DX12\Resource.h">
+      <Filter>Headerdateien\Implementation\Rendering\DX12</Filter>
+    </ClInclude>
+    <ClInclude Include="Implementation\Rendering\DX12\RootSignature.h">
+      <Filter>Headerdateien\Implementation\Rendering\DX12</Filter>
+    </ClInclude>
+    <ClInclude Include="Implementation\Rendering\DX12\StructuredBuffer.h">
+      <Filter>Headerdateien\Implementation\Rendering\DX12</Filter>
+    </ClInclude>
+    <ClInclude Include="Implementation\Rendering\DX12\SwapChain.h">
+      <Filter>Headerdateien\Implementation\Rendering\DX12</Filter>
+    </ClInclude>
+    <ClInclude Include="Implementation\Rendering\DX12\Casting.h">
+      <Filter>Headerdateien\Implementation\Rendering\DX12</Filter>
+    </ClInclude>
+    <ClInclude Include="Implementation\Rendering\DX12\Defines.h">
+      <Filter>Headerdateien\Implementation\Rendering\DX12</Filter>
+    </ClInclude>
+    <ClInclude Include="CloakEngine\Launcher\Launcher.h">
+      <Filter>Headerdateien\API\Launcher</Filter>
+    </ClInclude>
+    <ClInclude Include="Implementation\Launcher\Launcher.h">
+      <Filter>Headerdateien\Implementation\Launcher</Filter>
+    </ClInclude>
+    <ClInclude Include="CloakEngine\Interface\MoveableFrame.h">
+      <Filter>Headerdateien\API\Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="Implementation\Interface\MovableFrame.h">
+      <Filter>Headerdateien\Implementation\Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="CloakEngine\Interface\Menu.h">
+      <Filter>Headerdateien\API\Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="CloakEngine\Interface\ListMenu.h">
+      <Filter>Headerdateien\API\Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="Implementation\Interface\ListMenu.h">
+      <Filter>Headerdateien\Implementation\Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="Implementation\Helper\StateMachine.h">
+      <Filter>Headerdateien\Implementation\Helper</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\FillVector.h">
+      <Filter>Headerdateien\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="CloakEngine\Files\Buffer.h">
+      <Filter>Headerdateien\API\Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Implementation\Files\Buffer.h">
+      <Filter>Headerdateien\Implementation\Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Compress\LZW.h">
+      <Filter>Headerdateien\Engine\Compress</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Compress\UTF.h">
+      <Filter>Headerdateien\Engine\Compress</Filter>
+    </ClInclude>
+    <ClInclude Include="Implementation\Rendering\DX12\Lib.h">
+      <Filter>Headerdateien\Implementation\Rendering\DX12</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Steam\Stats.h">
+      <Filter>Headerdateien\Engine\Steam</Filter>
+    </ClInclude>
+    <ClInclude Include="Implementation\Rendering\VideoEncoder.h">
+      <Filter>Headerdateien\Implementation\Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="Implementation\Rendering\DX12\VideoEncoder.h">
+      <Filter>Headerdateien\Implementation\Rendering\DX12</Filter>
+    </ClInclude>
+    <ClInclude Include="CloakEngine\Global\Connection.h">
+      <Filter>Headerdateien\API\Global</Filter>
+    </ClInclude>
+    <ClInclude Include="Implementation\Global\Connection.h">
+      <Filter>Headerdateien\Implementation\Global</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Compress\NetBuffer\UDPBuffer.h">
+      <Filter>Headerdateien\Engine\Compress\NetBuffer</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Compress\NetBuffer\TCPBuffer.h">
+      <Filter>Headerdateien\Engine\Compress\NetBuffer</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Compress\NetBuffer\SecureNet.h">
+      <Filter>Headerdateien\Engine\Compress\NetBuffer</Filter>
+    </ClInclude>
+    <ClInclude Include="CloakEngine\Files\Hash\SHA256.h">
+      <Filter>Headerdateien\API\Files\Hash</Filter>
+    </ClInclude>
+    <ClInclude Include="CloakEngine\Files\Animation.h">
+      <Filter>Headerdateien\API\Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CloakEngine\Rendering\Manager.h">
+      <Filter>Headerdateien\API\Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="CloakEngine\Global\Memory.h">
+      <Filter>Headerdateien\API\Global</Filter>
+    </ClInclude>
+    <ClInclude Include="CloakEngine\Global\DebugLayer.h">
+      <Filter>Headerdateien\API\Global</Filter>
+    </ClInclude>
+    <ClInclude Include="Implementation\Global\DebugLayer.h">
+      <Filter>Headerdateien\Implementation\Global</Filter>
+    </ClInclude>
+    <ClInclude Include="Implementation\Global\Memory.h">
+      <Filter>Headerdateien\Implementation\Global</Filter>
+    </ClInclude>
+    <ClInclude Include="CloakEngine\Files\Scene.h">
+      <Filter>Headerdateien\API\Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Implementation\Files\Scene.h">
+      <Filter>Headerdateien\Implementation\Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\WorldStreamer.h">
+      <Filter>Headerdateien\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="Implementation\Rendering\Sampler.h">
+      <Filter>Headerdateien\Implementation\Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="Implementation\Rendering\DX12\Sampler.h">
+      <Filter>Headerdateien\Implementation\Rendering\DX12</Filter>
+    </ClInclude>
+    <ClInclude Include="CloakEngine\Rendering\RenderPass.h">
+      <Filter>Headerdateien\API\Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="CloakEngine\Rendering\PipelineState.h">
+      <Filter>Headerdateien\API\Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Graphic\DefaultRenderPass.h">
+      <Filter>Headerdateien\Engine\Graphic</Filter>
+    </ClInclude>
+    <ClInclude Include="CloakEngine\Helper\Predicate.h">
+      <Filter>Headerdateien\API\Helper</Filter>
+    </ClInclude>
+    <ClInclude Include="CloakEngine\Helper\Types.h">
+      <Filter>Headerdateien\API\Helper</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Graphic\DefaultShaderLib.h">
+      <Filter>Headerdateien\Engine\Graphic</Filter>
+    </ClInclude>
+    <ClInclude Include="CloakEngine\World\Entity.h">
+      <Filter>Headerdateien\API\World</Filter>
+    </ClInclude>
+    <ClInclude Include="Implementation\World\Entity.h">
+      <Filter>Headerdateien\Implementation\World</Filter>
+    </ClInclude>
+    <ClInclude Include="Implementation\Rendering\DX12\Queue.h">
+      <Filter>Headerdateien\Implementation\Rendering\DX12</Filter>
+    </ClInclude>
+    <ClInclude Include="Implementation\Rendering\Queue.h">
+      <Filter>Headerdateien\Implementation\Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Input\Keyboard.h">
+      <Filter>Headerdateien\Engine\Input</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Input\Gamepad.h">
+      <Filter>Headerdateien\Engine\Input</Filter>
+    </ClInclude>
+    <ClInclude Include="Implementation\Interface\RayTestContext.h">
+      <Filter>Headerdateien\Implementation\Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="CloakEngine\Rendering\RootDescription.h">
+      <Filter>Headerdateien\API\Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="Implementation\Rendering\Deserialization.h">
+      <Filter>Headerdateien\Implementation\Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="Implementation\Global\Math.h">
+      <Filter>Headerdateien\Implementation\Global</Filter>
+    </ClInclude>
+    <ClInclude Include="Implementation\Rendering\Adapter.h">
+      <Filter>Headerdateien\Implementation\Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="CloakEngine\Rendering\CommandSignature.h">
+      <Filter>Headerdateien\API\Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="Implementation\Rendering\RenderWorker.h">
+      <Filter>Headerdateien\Implementation\Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Compress\AAC.h">
+      <Filter>Headerdateien\Engine\Compress</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Compress\LZ4.h">
+      <Filter>Headerdateien\Engine\Compress</Filter>
+    </ClInclude>
+    <ClInclude Include="CloakEngine\World\ComponentManager.h">
+      <Filter>Headerdateien\API\World</Filter>
+    </ClInclude>
+    <ClInclude Include="Implementation\World\ComponentManager.h">
+      <Filter>Headerdateien\Implementation\World</Filter>
+    </ClInclude>
+    <ClInclude Include="CloakEngine\Components\Position.h">
+      <Filter>Headerdateien\API\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="CloakEngine\Components\Render.h">
+      <Filter>Headerdateien\API\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="Implementation\Components\Render.h">
+      <Filter>Headerdateien\Implementation\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="Implementation\Components\Position.h">
+      <Filter>Headerdateien\Implementation\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="CloakEngine\Components\Camera.h">
+      <Filter>Headerdateien\API\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="Implementation\Components\Camera.h">
+      <Filter>Headerdateien\Implementation\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="CloakEngine\Components\Moveable.h">
+      <Filter>Headerdateien\API\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="Implementation\Components\Moveable.h">
+      <Filter>Headerdateien\Implementation\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="CloakEngine\Components\Light.h">
+      <Filter>Headerdateien\API\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="Implementation\Components\GraphicUpdate.h">
+      <Filter>Headerdateien\Implementation\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="Implementation\Components\Light.h">
+      <Filter>Headerdateien\Implementation\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="CloakEngine\Files\BoundingVolume.h">
+      <Filter>Headerdateien\API\Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Implementation\Files\BoundingVolume.h">
+      <Filter>Headerdateien\Implementation\Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Physics\Core.h">
+      <Filter>Headerdateien\Engine\Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="CloakEngine\Rendering\Query.h">
+      <Filter>Headerdateien\API\Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="Implementation\Rendering\Query.h">
+      <Filter>Headerdateien\Implementation\Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="Implementation\Rendering\DX12\Query.h">
+      <Filter>Headerdateien\Implementation\Rendering\DX12</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Compress\ZLIB.h">
+      <Filter>Headerdateien\Engine\Compress</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Compress\NetBuffer\HTTPBuffer.h">
+      <Filter>Headerdateien\Engine\Compress\NetBuffer</Filter>
+    </ClInclude>
+    <ClInclude Include="CloakEngine\Files\Hash\Blake2.h">
+      <Filter>Headerdateien\API\Files\Hash</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Audio\Core.h">
+      <Filter>Headerdateien\Engine\Audio</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Audio\Resampler.h">
+      <Filter>Headerdateien\Engine\Audio</Filter>
+    </ClInclude>
+    <ClInclude Include="CloakEngine\World\Terrain.h">
+      <Filter>Headerdateien\API\World</Filter>
+    </ClInclude>
+    <ClInclude Include="CloakEngine\Helper\Reflection.h">
+      <Filter>Headerdateien\API\Helper</Filter>
+    </ClInclude>
+    <ClInclude Include="CloakEngine\Global\Task.h">
+      <Filter>Headerdateien\API\Global</Filter>
+    </ClInclude>
+    <ClInclude Include="Implementation\Global\Task.h">
+      <Filter>Headerdateien\Implementation\Global</Filter>
+    </ClInclude>
+    <ClInclude Include="CloakEngine\Components\AudioListener.h">
+      <Filter>Headerdateien\API\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="CloakEngine\Components\AudioSource.h">
+      <Filter>Headerdateien\API\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="CloakEngine\Files\Hash\FNV.h">
+      <Filter>Headerdateien\API\Files\Hash</Filter>
+    </ClInclude>
+    <ClInclude Include="CloakEngine\Global\Container\HashTable.h">
+      <Filter>Headerdateien\API\Global\Container</Filter>
+    </ClInclude>
+    <ClInclude Include="CloakEngine\Global\Container\List.h">
+      <Filter>Headerdateien\API\Global\Container</Filter>
+    </ClInclude>
+    <ClInclude Include="CloakEngine\Rendering\TextureAtlas.h">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
+    <ClInclude Include="Implementation\Rendering\DX12\TextureAtlas.h">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
+    <ClInclude Include="Implementation\Files\FileIOBuffer.h">
+      <Filter>Headerdateien\Implementation\Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CloakEngine\Global\Container\Allocator.h">
+      <Filter>Headerdateien\API\Global\Container</Filter>
+    </ClInclude>
+    <ClInclude Include="CloakEngine\Files\ExtendedBuffers.h">
+      <Filter>Headerdateien\API\Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="stdafx.cpp">
+      <Filter>Quelldateien</Filter>
+    </ClCompile>
+    <ClCompile Include="CloakEngine.cpp">
+      <Filter>Quelldateien</Filter>
+    </ClCompile>
+    <ClCompile Include="dllmain.cpp">
+      <Filter>Quelldateien</Filter>
+    </ClCompile>
+    <ClCompile Include="Compressor.cpp">
+      <Filter>Quelldateien\API\Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Shader.cpp">
+      <Filter>Quelldateien\API\Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Input.cpp">
+      <Filter>Quelldateien\API\Global</Filter>
+    </ClCompile>
+    <ClCompile Include="Log.cpp">
+      <Filter>Quelldateien\API\Global</Filter>
+    </ClCompile>
+    <ClCompile Include="Math.cpp">
+      <Filter>Quelldateien\API\Global</Filter>
+    </ClCompile>
+    <ClCompile Include="Debug.cpp">
+      <Filter>Quelldateien\API\Global</Filter>
+    </ClCompile>
+    <ClCompile Include="Game.cpp">
+      <Filter>Quelldateien\API\Global</Filter>
+    </ClCompile>
+    <ClCompile Include="Graphic.cpp">
+      <Filter>Quelldateien\API\Global</Filter>
+    </ClCompile>
+    <ClCompile Include="Logic.cpp">
+      <Filter>Quelldateien\API\Helper</Filter>
+    </ClCompile>
+    <ClCompile Include="SavePtr.cpp">
+      <Filter>Quelldateien\API\Helper</Filter>
+    </ClCompile>
+    <ClCompile Include="SyncSection.cpp">
+      <Filter>Quelldateien\API\Helper</Filter>
+    </ClCompile>
+    <ClCompile Include="Color.cpp">
+      <Filter>Quelldateien\API\Helper</Filter>
+    </ClCompile>
+    <ClCompile Include="Button.cpp">
+      <Filter>Quelldateien\API\Interface</Filter>
+    </ClCompile>
+    <ClCompile Include="CheckButton.cpp">
+      <Filter>Quelldateien\API\Interface</Filter>
+    </ClCompile>
+    <ClCompile Include="DropDownMenu.cpp">
+      <Filter>Quelldateien\API\Interface</Filter>
+    </ClCompile>
+    <ClCompile Include="Frame.cpp">
+      <Filter>Quelldateien\API\Interface</Filter>
+    </ClCompile>
+    <ClCompile Include="Label.cpp">
+      <Filter>Quelldateien\API\Interface</Filter>
+    </ClCompile>
+    <ClCompile Include="BasicGUI.cpp">
+      <Filter>Quelldateien\API\Interface</Filter>
+    </ClCompile>
+    <ClCompile Include="Thread.cpp">
+      <Filter>Quelldateien\Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="WindowHandler.cpp">
+      <Filter>Quelldateien\Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="BitMap.cpp">
+      <Filter>Quelldateien\Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="FileLoader.cpp">
+      <Filter>Quelldateien\Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="Localization.cpp">
+      <Filter>Quelldateien\API\Global</Filter>
+    </ClCompile>
+    <ClCompile Include="FileHandler.cpp">
+      <Filter>Quelldateien\API\Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Language.cpp">
+      <Filter>Quelldateien\API\Files</Filter>
+    </ClCompile>
+    <ClCompile Include="EditBox.cpp">
+      <Filter>Quelldateien\API\Interface</Filter>
+    </ClCompile>
+    <ClCompile Include="Slider.cpp">
+      <Filter>Quelldateien\API\Interface</Filter>
+    </ClCompile>
+    <ClCompile Include="Mouse.cpp">
+      <Filter>Quelldateien\API\Global</Filter>
+    </ClCompile>
+    <ClCompile Include="Huffman.cpp">
+      <Filter>Quelldateien\Engine\Compress</Filter>
+    </ClCompile>
+    <ClCompile Include="Configuration.cpp">
+      <Filter>Quelldateien\API\Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Audio.cpp">
+      <Filter>Quelldateien\API\Global</Filter>
+    </ClCompile>
+    <ClCompile Include="OS.cpp">
+      <Filter>Quelldateien\API</Filter>
+    </ClCompile>
+    <ClCompile Include="UID.cpp">
+      <Filter>Quelldateien\API\Helper</Filter>
+    </ClCompile>
+    <ClCompile Include="Font.cpp">
+      <Filter>Quelldateien\API\Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Image.cpp">
+      <Filter>Quelldateien\API\Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GraphicLock.cpp">
+      <Filter>Quelldateien\Engine\Graphic</Filter>
+    </ClCompile>
+    <ClCompile Include="Launcher.cpp">
+      <Filter>Quelldateien\Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="Mesh.cpp">
+      <Filter>Quelldateien\API\Files</Filter>
+    </ClCompile>
+    <ClCompile Include="StringConvert.cpp">
+      <Filter>Quelldateien\API\Helper</Filter>
+    </ClCompile>
+    <ClCompile Include="LZC.cpp">
+      <Filter>Quelldateien\Engine\Compress</Filter>
+    </ClCompile>
+    <ClCompile Include="ProgressBar.cpp">
+      <Filter>Quelldateien\API\Interface</Filter>
+    </ClCompile>
+    <ClCompile Include="Steam.cpp">
+      <Filter>Quelldateien\API\Global</Filter>
+    </ClCompile>
+    <ClCompile Include="Achievements.cpp">
+      <Filter>Quelldateien\Engine\Steam</Filter>
+    </ClCompile>
+    <ClCompile Include="LoadScreen.cpp">
+      <Filter>Quelldateien\API\Interface</Filter>
+    </ClCompile>
+    <ClCompile Include="Video.cpp">
+      <Filter>Quelldateien\API\Global</Filter>
+    </ClCompile>
+    <ClCompile Include="DX12Allocator.cpp">
+      <Filter>Quelldateien\API\Rendering\DX12</Filter>
+    </ClCompile>
+    <ClCompile Include="DX12BasicBuffer.cpp">
+      <Filter>Quelldateien\API\Rendering\DX12</Filter>
+    </ClCompile>
+    <ClCompile Include="DX12Casting.cpp">
+      <Filter>Quelldateien\API\Rendering\DX12</Filter>
+    </ClCompile>
+    <ClCompile Include="DX12ColorBuffer.cpp">
+      <Filter>Quelldateien\API\Rendering\DX12</Filter>
+    </ClCompile>
+    <ClCompile Include="DX12Manager.cpp">
+      <Filter>Quelldateien\API\Rendering\DX12</Filter>
+    </ClCompile>
+    <ClCompile Include="DX12Context.cpp">
+      <Filter>Quelldateien\API\Rendering\DX12</Filter>
+    </ClCompile>
+    <ClCompile Include="DX12DepthBuffer.cpp">
+      <Filter>Quelldateien\API\Rendering\DX12</Filter>
+    </ClCompile>
+    <ClCompile Include="Defines.cpp">
+      <Filter>Quelldateien\API\Rendering</Filter>
+    </ClCompile>
+    <ClCompile Include="DescriptorHandle.cpp">
+      <Filter>Quelldateien\API\Rendering</Filter>
+    </ClCompile>
+    <ClCompile Include="DX12PipelineState.cpp">
+      <Filter>Quelldateien\API\Rendering\DX12</Filter>
+    </ClCompile>
+    <ClCompile Include="DX12Resource.cpp">
+      <Filter>Quelldateien\API\Rendering\DX12</Filter>
+    </ClCompile>
+    <ClCompile Include="DX12RootSignature.cpp">
+      <Filter>Quelldateien\API\Rendering\DX12</Filter>
+    </ClCompile>
+    <ClCompile Include="DX12StructuredBuffer.cpp">
+      <Filter>Quelldateien\API\Rendering\DX12</Filter>
+    </ClCompile>
+    <ClCompile Include="VertexData.cpp">
+      <Filter>Quelldateien\API\Rendering</Filter>
+    </ClCompile>
+    <ClCompile Include="Allocator.cpp">
+      <Filter>Quelldateien\API\Rendering</Filter>
+    </ClCompile>
+    <ClCompile Include="DX12Device.cpp">
+      <Filter>Quelldateien\API\Rendering\DX12</Filter>
+    </ClCompile>
+    <ClCompile Include="Manager.cpp">
+      <Filter>Quelldateien\API\Rendering</Filter>
+    </ClCompile>
+    <ClCompile Include="DX12SwapChain.cpp">
+      <Filter>Quelldateien\API\Rendering\DX12</Filter>
+    </ClCompile>
+    <ClCompile Include="LauncherManager.cpp">
+      <Filter>Quelldateien\API\Launcher</Filter>
+    </ClCompile>
+    <ClCompile Include="MovableFrame.cpp">
+      <Filter>Quelldateien\API\Interface</Filter>
+    </ClCompile>
+    <ClCompile Include="ListMenu.cpp">
+      <Filter>Quelldateien\API\Interface</Filter>
+    </ClCompile>
+    <ClCompile Include="Menu.cpp">
+      <Filter>Quelldateien\API\Interface</Filter>
+    </ClCompile>
+    <ClCompile Include="StateMachine.cpp">
+      <Filter>Quelldateien\API\Helper</Filter>
+    </ClCompile>
+    <ClCompile Include="Buffer.cpp">
+      <Filter>Quelldateien\API\Files</Filter>
+    </ClCompile>
+    <ClCompile Include="LZW.cpp">
+      <Filter>Quelldateien\Engine\Compress</Filter>
+    </ClCompile>
+    <ClCompile Include="UTF.cpp">
+      <Filter>Quelldateien\Engine\Compress</Filter>
+    </ClCompile>
+    <ClCompile Include="DX12Lib.cpp">
+      <Filter>Quelldateien\API\Rendering\DX12</Filter>
+    </ClCompile>
+    <ClCompile Include="DX12VideoEncoder.cpp">
+      <Filter>Quelldateien\API\Rendering\DX12</Filter>
+    </ClCompile>
+    <ClCompile Include="Connection.cpp">
+      <Filter>Quelldateien\API\Global</Filter>
+    </ClCompile>
+    <ClCompile Include="UDPBuffer.cpp">
+      <Filter>Quelldateien\Engine\Compress\NetBuffer</Filter>
+    </ClCompile>
+    <ClCompile Include="TCPBuffer.cpp">
+      <Filter>Quelldateien\Engine\Compress\NetBuffer</Filter>
+    </ClCompile>
+    <ClCompile Include="SecureNet.cpp">
+      <Filter>Quelldateien\Engine\Compress\NetBuffer</Filter>
+    </ClCompile>
+    <ClCompile Include="SHA256.cpp">
+      <Filter>Quelldateien\API\Files\Hash</Filter>
+    </ClCompile>
+    <ClCompile Include="Memory.cpp">
+      <Filter>Quelldateien\API\Global</Filter>
+    </ClCompile>
+    <ClCompile Include="DebugLayer.cpp">
+      <Filter>Quelldateien\API\Global</Filter>
+    </ClCompile>
+    <ClCompile Include="Scene.cpp">
+      <Filter>Quelldateien\API\Files</Filter>
+    </ClCompile>
+    <ClCompile Include="WorldStreamer.cpp">
+      <Filter>Quelldateien\Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="DX12Sampler.cpp">
+      <Filter>Quelldateien\API\Rendering\DX12</Filter>
+    </ClCompile>
+    <ClCompile Include="DefaultRenderPass.cpp">
+      <Filter>Quelldateien\Engine\Graphic</Filter>
+    </ClCompile>
+    <ClCompile Include="DataTypes.cpp">
+      <Filter>Quelldateien\API\Rendering</Filter>
+    </ClCompile>
+    <ClCompile Include="DefaultShaderLib.cpp">
+      <Filter>Quelldateien\Engine\Graphic</Filter>
+    </ClCompile>
+    <ClCompile Include="Entity.cpp">
+      <Filter>Quelldateien\API\World</Filter>
+    </ClCompile>
+    <ClCompile Include="DX12Queue.cpp">
+      <Filter>Quelldateien\API\Rendering\DX12</Filter>
+    </ClCompile>
+    <ClCompile Include="Keyboard.cpp">
+      <Filter>Quelldateien\Engine\Input</Filter>
+    </ClCompile>
+    <ClCompile Include="Gamepad.cpp">
+      <Filter>Quelldateien\Engine\Input</Filter>
+    </ClCompile>
+    <ClCompile Include="RayTestContext.cpp">
+      <Filter>Quelldateien\API\Interface</Filter>
+    </ClCompile>
+    <ClCompile Include="RootDescription.cpp">
+      <Filter>Quelldateien\API\Rendering</Filter>
+    </ClCompile>
+    <ClCompile Include="GraphicCore.cpp">
+      <Filter>Quelldateien\Engine\Graphic</Filter>
+    </ClCompile>
+    <ClCompile Include="Context.cpp">
+      <Filter>Quelldateien\API\Rendering</Filter>
+    </ClCompile>
+    <ClCompile Include="LZ4.cpp">
+      <Filter>Quelldateien\Engine\Compress</Filter>
+    </ClCompile>
+    <ClCompile Include="ComponentManager.cpp">
+      <Filter>Quelldateien\API\World</Filter>
+    </ClCompile>
+    <ClCompile Include="RenderComponent.cpp">
+      <Filter>Quelldateien\API\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="PositionComponent.cpp">
+      <Filter>Quelldateien\API\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="CameraComponent.cpp">
+      <Filter>Quelldateien\API\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="MoveabeComponent.cpp">
+      <Filter>Quelldateien\API\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="AAC.cpp">
+      <Filter>Quelldateien\Engine\Compress</Filter>
+    </ClCompile>
+    <ClCompile Include="BoundingVolume.cpp">
+      <Filter>Quelldateien\API\Files</Filter>
+    </ClCompile>
+    <ClCompile Include="LightComponent.cpp">
+      <Filter>Quelldateien\API\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="PhysicsCore.cpp">
+      <Filter>Quelldateien\Engine\Physics</Filter>
+    </ClCompile>
+    <ClCompile Include="DX12Query.cpp">
+      <Filter>Quelldateien\API\Rendering\DX12</Filter>
+    </ClCompile>
+    <ClCompile Include="ZLIB.cpp">
+      <Filter>Quelldateien\Engine\Compress</Filter>
+    </ClCompile>
+    <ClCompile Include="HTTPBuffer.cpp">
+      <Filter>Quelldateien\Engine\Compress\NetBuffer</Filter>
+    </ClCompile>
+    <ClCompile Include="Blake2.cpp">
+      <Filter>Quelldateien\API\Files\Hash</Filter>
+    </ClCompile>
+    <ClCompile Include="AudioCore.cpp">
+      <Filter>Quelldateien\Engine\Audio</Filter>
+    </ClCompile>
+    <ClCompile Include="AudioResampler.cpp">
+      <Filter>Quelldateien\Engine\Audio</Filter>
+    </ClCompile>
+    <ClCompile Include="Task.cpp">
+      <Filter>Quelldateien\API\Global</Filter>
+    </ClCompile>
+    <ClCompile Include="FileIOBuffer.cpp">
+      <Filter>Quelldateien\API\Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>

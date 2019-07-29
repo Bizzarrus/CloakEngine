@@ -1,0 +1,67 @@
+// Engine Specific Macros
+
+#define RENDERING_INTERFACE class
+#define CE_PER_SHADER(Call, Sep, ...)
+
+// Attribute Macros
+
+#define CLOAKENGINE_API
+
+#define CLOAK_CALL
+#define CLOAK_CALL_THIS
+#define CLOAK_CALL_FAST
+#define CLOAK_CALL_MATH
+
+#define CLOAK_UUID(id) __declspec(uuid(id))
+#define CLOAK_INTERFACE_BASIC class
+#define CLOAK_DEPRECATED 
+#define CLOAK_ALIGN
+#define CLOAK_FORCEINLINE
+
+#define CLOAK_INTERFACE class
+#define CLOAK_INTERFACE_ID(id) class __declspec(uuid(id))
+
+#define CLOAKENGINE_API_NAMESPACE
+
+// Literals
+#define KB *(1<<10)
+#define MB *(1<<20)
+#define GB *(1<<30)
+
+
+// Parameter Annotations
+#define In
+#define Out
+#define Inout
+#define Inout_updates(size)
+#define In_opt
+#define Inptr
+#define Inptr_opt
+#define Inref
+#define Inref_opt
+#define Out_opt
+#define Outptr
+#define Outptr_opt
+#define Outref
+#define Outref_opt
+#define Inout_opt
+#define In_reads(size) In
+#define In_reads_opt(size) In_opt
+#define In_reads_bytes(size) In
+#define In_reads_bytes_opt(size) In_opt
+#define Out_writes(size) Out
+#define Out_writes_opt(size) Out_opt
+#define Out_writes_bytes(size) Out
+#define Out_writes_bytes_opt(size) Out_opt
+#define Out_writes_to(size, count) Out
+#define Out_writes_bytes_to(size, count) Out
+#define Success(expr)
+#define Success_Type(expr)
+#define Use_annotations 
+#define Ret_notnull
+#define Ret_maybenull
+#define In_range(min,max)
+#define Post_satisfies(expr)
+#define When(expr, sal)
+#define Field_size(len)
+#define Filed_size_bytes(len)
