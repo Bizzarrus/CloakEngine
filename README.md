@@ -1,10 +1,11 @@
 # CloakEngine
 CloakEngine is a self-written 3D Open World Game Engine, written in C++. The project is currently work-in-progress and far from finished. Some code-parts are based on 3rd-party example implementations or corresponding papers, more information is stated at the specific places of the source files in the comments.
 # Dependencies
-The engines uses the SteamAPI and tiny_obj_loader (corresponding files are contained in the reprository). Other dependencies are the following projects within VCPKG:
+The engines uses the SteamAPI, DirectXShaderCompiler and tiny_obj_loader (corresponding files are contained in the reprository). Other dependencies are the following projects within VCPKG:
 - concurrentqueue
 - LZ4
 - zLib
+- SpirV-Cross
 In addition to that, the engine requires the current Windows 10 API (Version 10.0.18362.0), including DirectX 12.
 # Projects and current state
 ## CloakCompiler
