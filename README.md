@@ -6,6 +6,7 @@ The engines uses the SteamAPI, DirectXShaderCompiler and tiny_obj_loader (corres
 - LZ4
 - zLib
 - SpirV-Cross
+
 In addition to that, the engine requires the current Windows 10 API (Version 10.0.18362.0), including DirectX 12.
 # Projects and current state
 ## CloakCompiler
