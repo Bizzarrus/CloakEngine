@@ -10,7 +10,7 @@
 namespace CloakEngine {
 	namespace Engine {
 		namespace Launcher {
-			bool CLOAK_CALL StartLauncher(In API::Global::ILauncherEvent* events, Inout Impl::Global::Game::ThreadSleepInfo* tsi);
+			bool CLOAK_CALL StartLauncher(In API::Global::ILauncherEvent* events, Inout Impl::Global::Game::ThreadSleepState* tsi);
 			LRESULT CALLBACK LauncherCallback(In HWND hWnd, In UINT msg, In WPARAM wParam, In LPARAM lParam);
 			void CLOAK_CALL SetLauncherResult(In bool res);
 		}

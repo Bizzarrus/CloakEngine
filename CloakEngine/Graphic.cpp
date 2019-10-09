@@ -64,14 +64,6 @@ namespace CloakEngine {
 					delete g_res;
 					g_res = nullptr;
 				}
-				void CLOAK_CALL GetModifedSettings(Out API::Global::Graphic::Settings* gset)
-				{
-					if (gset != nullptr)
-					{
-						API::Helper::Lock lock(Impl::Global::Graphic::g_syncSettings);
-						*gset = g_set;
-					}
-				}
 			}
 		}
 	}
@@ -82,7 +74,7 @@ namespace CloakEngine {
 
 				CLOAKENGINE_API void CLOAK_CALL SetSettings(In const Settings& setting)
 				{
-					API::Helper::Lock lock(Impl::Global::Graphic::g_syncSettings);
+					API::Helper::WriteLock lock(Impl::Global::Graphic::g_syncSettings);
 					Settings lset = Impl::Global::Graphic::g_set;
 					g_set = setting;
 					Impl::Global::Graphic::g_set = setting;
@@ -98,7 +90,7 @@ namespace CloakEngine {
 				{
 					if (setting != nullptr)
 					{
-						API::Helper::Lock lock(Impl::Global::Graphic::g_syncSettings);
+						API::Helper::ReadLock lock(Impl::Global::Graphic::g_syncSettings);
 						*setting = g_set;
 					}
 				}
@@ -122,7 +114,7 @@ namespace CloakEngine {
 				}
 				CLOAKENGINE_API long double CLOAK_CALL GetAspectRatio() 
 				{
-					API::Helper::Lock lock(Impl::Global::Graphic::g_syncSettings);
+					API::Helper::ReadLock lock(Impl::Global::Graphic::g_syncSettings);
 					const long double W = static_cast<long double>(g_set.Resolution.Width);
 					const long double H = static_cast<long double>(g_set.Resolution.Height);
 					return W / H;

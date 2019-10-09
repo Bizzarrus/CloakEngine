@@ -1,8 +1,7 @@
 #include "stdafx.h"
 #include "CloakCompiler/Converter.h"
 
-#define TINYOBJLOADER_IMPLEMENTATION
-#include "Include/tiny_obj_loader.h"
+#include <tiny_obj_loader.h> //from vcpkg
 
 namespace CloakCompiler {
 	namespace API {
@@ -37,7 +36,7 @@ namespace CloakCompiler {
 				std::string matP = CloakEngine::Helper::StringConvert::ConvertToU8(matPath) + "/";
 				const char* matPC = nullptr;
 				if (matP.length() > 0) { matPC = matP.c_str(); }
-				bool res = tinyobj::LoadObj(&attributes, &shapes, &mats, error, file.c_str(), matPC);
+				bool res = tinyobj::LoadObj(&attributes, &shapes, &mats, error, error, file.c_str(), matPC);
 				CloakDebugLog("Converter reading " + std::to_string(mats.size()) + " materials!");
 				if (res == false) 
 				{ 

@@ -9,6 +9,175 @@
 #define SNAP_TO_AXIS_H_2(scene,p,Axis,halfDist,fullDist,cur,Comp,Neg,Name) if(p.Axis Comp Neg halfDist){do{auto* n=SNAP_TO_AXIS_ADJ(cur,Name); if(n==nullptr){scene->Resize(API::Files::Scene_v1::AdjacentPos::Name);} else {cur=n; p.Axis-= Neg fullDist;}} while(p.Axis Comp Neg halfDist);}
 #define SNAP_TO_AXIS(scene,p,Axis,halfDist,fullDist,cur, NamePos, NameNeg,variant) SNAP_TO_AXIS_H_##variant(scene,p,Axis,halfDist,fullDist,cur,>,,NamePos) else SNAP_TO_AXIS_H_##variant(scene,p,Axis,halfDist,fullDist,cur,<,-,NameNeg)
 
+//TODO: To improve cache locality during world streaming, organize WorldNodes in an 3D space-filling curve!
+//	See https://pdfs.semanticscholar.org/10df/d62790d503cca5a11173618491f0e452bc52.pdf (Optimizing Cache Behavior of Ray-Driven Volume Rendering Using Space - Filling Curves)
+//	and https://arxiv.org/pdf/1710.06384.pdf (Efficient Neighbor-Finding on Space - Filling Curves)
+
+//Example Hilbert Mapping:
+#ifdef HILBERT_CURVE
+constexpr size_t HILBERT_TRANSFORM[] = { 0, 1, 7, 6, 3, 2, 4, 5 };
+size_t CLOAK_CALL HilbertPosition(In const CE::Global::Math::IntPoint& pos, In uint32_t maxSize)
+{
+	CLOAK_ASSUME(maxSize > 0);
+	const uint8_t curveOrder = CE::Global::Math::bitScanReverse(maxSize) + 1;
+	if constexpr (sizeof(size_t) >= 8) { CLOAK_ASSUME(curveOrder <= 21); }
+	else { CLOAK_ASSUME(curveOrder <= 10); }
+	CLOAK_ASSUME(pos.X >= 0 && pos.Y >= 0 && pos.Z >= 0);
+	uint32_t x = static_cast<uint32_t>(pos.X);
+	uint32_t y = static_cast<uint32_t>(pos.Y);
+	uint32_t z = static_cast<uint32_t>(pos.Z);
+	size_t r = 0;
+	for (uint8_t a = curveOrder; a > 0; a--)
+	{
+		const uint8_t b = a - 1;
+		const uint8_t i = (((x >> b) & 0x1) << 2) | (((y >> b) & 0x1) << 1) | (((z >> b) & 0x1) << 0);
+		CLOAK_ASSUME(i <= 0b111); //Sanity Check
+		switch (i)
+		{
+			case 0b000:
+				std::swap(y, z);
+				break;
+			case 0b001:
+			case 0b101:
+				std::swap(x, y);
+				break;
+			case 0b100:
+			case 0b110:
+				x ^= ~0Ui32;
+				z ^= ~0Ui32;
+				break;
+			case 0b011:
+			case 0b111:
+				std::swap(x, y);
+				x ^= ~0Ui32;
+				y ^= ~0Ui32;
+				break;
+			case 0b010:
+				std::swap(y, z);
+				y ^= ~0Ui32;
+				z ^= ~0Ui32;
+				break;
+			default:
+				CLOAK_ASSUME(false);
+				break;
+		}
+		r = (r << 3) | HILBERT_TRANSFORM[i];
+	}
+	return r;
+}
+#endif
+//Example Z-Curve Mapping:
+#ifdef Z_CURVE
+//We could also use 3 LUT on a per-byte basis instead of Split3, which would speed things up even further
+inline size_t CLOAK_CALL Split3(In int x)
+{
+	uint64_t a;
+	if constexpr (sizeof(size_t) >= 8)
+	{
+		a = static_cast<uint64_t>(x) & 0x1FFFFF;
+		a = (a | a << 0x20) & 0x001F00000000FFFF;
+	}
+	else
+	{
+		a = static_cast<uint64_t>(x) & 0x3FF;
+	}
+	a = (a | a << 0x10) & 0x001F0000FF0000FF;
+	a = (a | a << 0x08) & 0x100F00F00F00F00F;
+	a = (a | a << 0x04) & 0x10C30C30C30C30C3;
+	a = (a | a << 0x02) & 0x1239249249249249;
+	return static_cast<size_t>(a);
+}
+size_t CLOAK_CALL ZPosition(In const CE::Global::Math::IntPoint& pos) 
+{
+	CLOAK_ASSUME(pos.X >= 0 && pos.Y >= 0 && pos.Z >= 0);
+	return (Split3(pos.X) << 2) | (Split3(pos.Y) << 1) | (Split3(pos.Z) << 0); 
+}
+//Z-Curve Mapping offers fast computation of adjacent indices:
+size_t CLOAK_CALL ZDecX(In size_t z)
+{
+	if constexpr (sizeof(size_t) >= 8)
+	{
+		return (((z & 0444444444444444444444) - 1) & 0444444444444444444444) | (z & 0133333333333333333333);
+	}
+	else
+	{
+		return (((z & 04444444444) - 1) & 04444444444) | (z & 033333333333);
+	}
+}
+size_t CLOAK_CALL ZIncX(In size_t z)
+{
+	if constexpr (sizeof(size_t) >= 8)
+	{
+		return (((z | 0133333333333333333333) + 1) & 0444444444444444444444) | (z & 0133333333333333333333);
+	}
+	else
+	{
+		return (((z | 033333333333) + 1) & 04444444444) | (z & 033333333333);
+	}
+}
+size_t CLOAK_CALL ZDecY(In size_t z)
+{
+	if constexpr (sizeof(size_t) >= 8)
+	{
+		return (((z & 0222222222222222222222) - 1) & 0222222222222222222222) | (z & 01555555555555555555555);
+	}
+	else
+	{
+		return (((z & 02222222222) - 1) & 02222222222) | (z & 035555555555);
+	}
+}
+size_t CLOAK_CALL ZIncY(In size_t z)
+{
+	if constexpr (sizeof(size_t) >= 8)
+	{
+		return (((z | 01555555555555555555555) + 1) & 0222222222222222222222) | (z & 01555555555555555555555);
+	}
+	else
+	{
+		return (((z | 035555555555) + 1) & 02222222222) | (z & 035555555555);
+	}
+}
+size_t CLOAK_CALL ZDecZ(In size_t z)
+{
+	if constexpr (sizeof(size_t) >= 8)
+	{
+		return (((z & 0111111111111111111111) - 1) & 0111111111111111111111) | (z & 01666666666666666666666);
+	}
+	else
+	{
+		return (((z & 01111111111) - 1) & 01111111111) | (z & 036666666666);
+	}
+}
+size_t CLOAK_CALL ZIncZ(In size_t z)
+{
+	if constexpr (sizeof(size_t) >= 8)
+	{
+		return (((z | 01666666666666666666666) + 1) & 0111111111111111111111) | (z & 01666666666666666666666);
+	}
+	else
+	{
+		return (((z | 036666666666) + 1) & 01111111111) | (z & 036666666666);
+	}
+}
+
+#endif
+
+//TODO: Loading Scene process:
+//	- User may register own components (with an identifier and a function to process loading with an IWriter and an entity pointer) on global level during game start
+//	- Entities are seperated in 3 stages:
+//		- World Local Entities are loaded at game start and kept alive till the end of the game (eg named NPCs)
+//		- Scene Local Entities are loaded at scene start and destroyed once the scene unloads (eg enemies that don't despawn on death and reset on scene load)
+//		- Node Local Entities are loaded with a WorldNode, and destroyed once the node is unloaded (eg static environment)
+//	- When loading, the informations are first buffered within a data structure. Then, in a spereated task (flagged with 'Component' flag), entities are created and
+//		  components assigned, with the usage of registered components.
+//		- The file needs to contain both an component identifier and all required data to load initial configuration
+// - For spawning entities, we could use a node local entity (spawn point) that then creates the to-spawn entities acording to some configuration
+//		- These entities would require some despawn component, that can release the own entity 
+//	Difficult part: Even Scene/World Local entities have to react if the world node they're in loads/unloads
+//	- Resources for graphics, physics, audio, etc might need to load/unload accordingly
+//	- AI states might update to move the entity or whatever
+//		- unloaded entities should be updated at a lower frequency
+
 namespace CloakEngine {
 	namespace Impl {
 		namespace Files {

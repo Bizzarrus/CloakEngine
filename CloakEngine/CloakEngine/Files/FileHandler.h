@@ -30,7 +30,7 @@ namespace CloakEngine {
 					std::u16string Name;
 					std::u16string Typ;
 				};
-				enum class Priority { LOW = 1, NORMAL = 2, HIGH = 3 };
+				enum class Priority : uint8_t { LOW = 1, NORMAL = 2, HIGH = 3 };
 				enum class LOD { ULTRA = 0, HIGH = 1, NORMAL = 2, LOW = 3 };
 				CLOAKENGINE_API void CLOAK_CALL listAllFilesInDictionary(In const API::Files::Buffer_v1::UFI& ufi, In std::u16string fileTyp, Out API::List<FileInfo>* paths);
 				CLOAKENGINE_API void CLOAK_CALL listAllFilesInDictionary(In const API::Files::Buffer_v1::UFI& ufi, Out API::List<FileInfo>* paths);

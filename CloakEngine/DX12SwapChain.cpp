@@ -13,7 +13,7 @@ namespace CloakEngine {
 				namespace SwapChain_v1 {
 					inline UINT CLOAK_CALL CreateFlags(In const API::Rendering::Hardware& hardware)
 					{
-						UINT f = 0;
+						UINT f = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
 						if (hardware.AllowTearing == true) { f |= DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING; }
 						return f;
 					}
@@ -80,7 +80,7 @@ namespace CloakEngine {
 						desc.OutputWindow = Engine::WindowHandler::getWindow();
 						desc.SampleDesc.Count = 1;
 						desc.SampleDesc.Quality = 0;
-						desc.Windowed = gset.WindowMode == API::Global::Graphic::WindowMode::FULLSCREEN ? FALSE : TRUE;
+						desc.Windowed = TRUE;
 						desc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
 						m_W = gset.Resolution.Width;
 						m_H = gset.Resolution.Height;
@@ -135,11 +135,11 @@ namespace CloakEngine {
 					{
 						bool validBuffer = true;
 						UINT flg = 0;
-						if ((flag & PRESENT_TEST) != 0) { flg |= DXGI_PRESENT_TEST; validBuffer = false; }
+						if (IsFlagSet(flag, PRESENT_TEST)) { flg |= DXGI_PRESENT_TEST; validBuffer = false; }
 						else 
 						{
 							//if (m_validBuffer == true) { flg |= DXGI_PRESENT_DO_NOT_SEQUENCE; } //TODO: This does not work in window mode(?)
-							if ((flag & PRESENT_NO_WAIT) != 0) { flg |= DXGI_PRESENT_DO_NOT_WAIT; }
+							if (IsFlagSet(flag, PRESENT_NO_WAIT)) { flg |= DXGI_PRESENT_DO_NOT_WAIT; }
 							if (VSync == false && GetFullscreenState() == false) { flg |= DXGI_PRESENT_ALLOW_TEARING; }
 						}
 						//TODO: Laptop dedicated GPU has some problem with swap chain present (crashes after present call)
@@ -215,11 +215,22 @@ namespace CloakEngine {
 						m_forceResize = true;
 						CloakDebugLog("Set Fullscreen State: " + std::to_string(state));
 					}
-					void CLOAK_CALL_THIS SwapChain::ResizeTarget(Inout SWAPCHAIN_MODE* mode)
+					void CLOAK_CALL_THIS SwapChain::ResizeTarget(In const SWAPCHAIN_MODE& mode)
 					{
-						DXGI_MODE_DESC md = Casting::CastForward(*mode);
+						DXGI_MODE_DESC md = Casting::CastForward(mode);
+						md.Format = DXGI_FORMAT_R10G10B10A2_UNORM;
+						md.RefreshRate.Denominator = 0;
+						md.RefreshRate.Numerator = 0;
 						m_swap->ResizeTarget(&md);
-						*mode = Casting::CastBackward(md);
+					}
+					void CLOAK_CALL_THIS SwapChain::ResizeTarget(In UINT width, In UINT height)
+					{
+						SWAPCHAIN_MODE mode;
+						mode.Height = height;
+						mode.Width = width;
+						mode.Scaling = SCALING_UNSPECIFIED;
+						mode.ScanlineOrdering = ORDER_UNSPECIFIED;
+						ResizeTarget(mode);
 					}
 					UINT CLOAK_CALL_THIS SwapChain::GetCurrentBackBufferIndex()
 					{

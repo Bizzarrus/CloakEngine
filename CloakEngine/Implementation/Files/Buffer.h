@@ -78,7 +78,7 @@ namespace CloakEngine {
 				};
 				class MultithreadedWriteBuffer : public virtual API::Files::Buffer_v1::IMultithreadedWriteBuffer, public Impl::Helper::SavePtr_v1::SavePtr {
 					public:
-						CLOAK_CALL MultithreadedWriteBuffer(In const CE::RefPointer<API::Files::IWriteBuffer>& dst, In_opt std::function<void(In void* userData, In uint64_t size)> onWrite = nullptr, In_opt API::Global::Threading::ScheduleHint writingHint = API::Global::Threading::ScheduleHint::None);
+						CLOAK_CALL MultithreadedWriteBuffer(In const CE::RefPointer<API::Files::IWriteBuffer>& dst, In_opt std::function<void(In void* userData, In uint64_t size)> onWrite = nullptr, In_opt API::Global::Threading::Flag flags = API::Global::Threading::Flag::None);
 						virtual CLOAK_CALL ~MultithreadedWriteBuffer();
 						virtual CE::RefPointer<API::Files::Buffer_v1::IWriteBuffer> CLOAK_CALL_THIS CreateLocalWriteBuffer(In_opt void* userData = nullptr) override;
 						virtual CE::RefPointer<API::Files::Compressor_v2::IWriter> CLOAK_CALL_THIS CreateLocalWriter(In_opt void* userData = nullptr) override;
@@ -138,7 +138,7 @@ namespace CloakEngine {
 						};
 
 						const std::function<void(In void* userData, In uint64_t size)> m_onWrite;
-						const API::Global::Threading::ScheduleHint m_writeTaskHint;
+						const API::Global::Threading::Flag m_writeFlags;
 						CE::RefPointer<API::Helper::ISyncSection> m_sync;
 						CE::RefPointer<API::Files::IWriteBuffer> m_target;
 						PageList* m_readyToWriteBegin;

@@ -319,10 +319,10 @@ namespace ShaderCompiler {
 					shEncode.Lib.WriteNamespaceAlias = config->get("NamespaceAlias")->toBool(true);
 					shEncode.Lib.SharedLib = config->get("SharedLib")->toBool(false);
 					std::string genName = config->get("LibGenerator")->toString("Ninja");
-					if (genName.compare("Ninja") == 0) { shEncode.Lib.Generator = CloakCompiler::Shader::Shader_v1003::LibGenerator::Ninja; }
-					else if (genName.compare("VS2015") == 0) { shEncode.Lib.Generator = CloakCompiler::Shader::Shader_v1003::LibGenerator::VisualStudio_2015; }
-					else if (genName.compare("VS2017") == 0) { shEncode.Lib.Generator = CloakCompiler::Shader::Shader_v1003::LibGenerator::VisualStudio_2017; }
-					else if (genName.compare("VS2019") == 0) { shEncode.Lib.Generator = CloakCompiler::Shader::Shader_v1003::LibGenerator::VisualStudio_2019; }
+					if (genName.compare("Ninja") == 0) { shEncode.Lib.Generator = CloakCompiler::LibGenerator::Ninja; }
+					else if (genName.compare("VS2015") == 0) { shEncode.Lib.Generator = CloakCompiler::LibGenerator::VisualStudio_2015; }
+					else if (genName.compare("VS2017") == 0) { shEncode.Lib.Generator = CloakCompiler::LibGenerator::VisualStudio_2017; }
+					else if (genName.compare("VS2019") == 0) { shEncode.Lib.Generator = CloakCompiler::LibGenerator::VisualStudio_2019; }
 					else 
 					{
 						CloakEngine::Global::Log::WriteToLog("Error: Unknown lib-generator type '" + genName + "'. Possible values are 'Ninja', 'VS2015', 'VS2017' and 'VS2019'", CloakEngine::Global::Log::Type::Info);

@@ -31,7 +31,8 @@ namespace CloakEngine {
 							HRESULT CLOAK_CALL_THIS ResizeBuffers(In UINT frameCount, In UINT width, In UINT height) override;
 							bool CLOAK_CALL_THIS GetFullscreenState() const override;
 							void CLOAK_CALL_THIS SetFullscreenState(In bool state) override;
-							void CLOAK_CALL_THIS ResizeTarget(Inout SWAPCHAIN_MODE* mode) override;
+							void CLOAK_CALL_THIS ResizeTarget(In const SWAPCHAIN_MODE & mode) override;
+							void CLOAK_CALL_THIS ResizeTarget(In UINT width, In UINT height) override;
 							UINT CLOAK_CALL_THIS GetCurrentBackBufferIndex() override;
 							bool CLOAK_CALL_THIS SupportHDR() override;
 							API::Rendering::IColorBuffer* CLOAK_CALL_THIS GetCurrentBackBuffer() override;

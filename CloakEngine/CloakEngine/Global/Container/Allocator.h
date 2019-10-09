@@ -18,6 +18,8 @@
 #endif
 
 //#define USE_NEW_CONTAINER
+#define STACK_ALLOCATE(size) (CLOAK_ASSUME(size < 1 KB), _alloca(size))
+#define STACK_FREE(ptr)
 
 namespace CloakEngine {
 	CLOAKENGINE_API_NAMESPACE namespace API {

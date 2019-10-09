@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.26228.9
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29123.88
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CloakEngineTest", "CloakEngineTest\CloakEngineTest.vcxproj", "{AAB8C961-5EA2-4BDC-B14E-2F404BB65404}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -11,12 +11,6 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CloakEngineTest", "CloakEng
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CloakCompiler", "CloakCompiler\CloakCompiler.vcxproj", "{8E72213E-6D3F-481F-ADED-CCBA6C110CDF}"
 	ProjectSection(ProjectDependencies) = postProject
-		{49BE57EE-620B-4E2C-9C6C-6D53C1B81053} = {49BE57EE-620B-4E2C-9C6C-6D53C1B81053}
-	EndProjectSection
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CloakEditor", "CloakEditor\CloakEditor.vcxproj", "{A0C758C8-6ECD-42A2-8796-B966C2C785B4}"
-	ProjectSection(ProjectDependencies) = postProject
-		{8E72213E-6D3F-481F-ADED-CCBA6C110CDF} = {8E72213E-6D3F-481F-ADED-CCBA6C110CDF}
 		{49BE57EE-620B-4E2C-9C6C-6D53C1B81053} = {49BE57EE-620B-4E2C-9C6C-6D53C1B81053}
 	EndProjectSection
 EndProject
@@ -108,38 +102,6 @@ Global
 		{8E72213E-6D3F-481F-ADED-CCBA6C110CDF}.W8 Release|Win32.Build.0 = W8 Release|Win32
 		{8E72213E-6D3F-481F-ADED-CCBA6C110CDF}.W8 Release|x64.ActiveCfg = W8 Release|x64
 		{8E72213E-6D3F-481F-ADED-CCBA6C110CDF}.W8 Release|x64.Build.0 = W8 Release|x64
-		{A0C758C8-6ECD-42A2-8796-B966C2C785B4}.Debug|ARM.ActiveCfg = W8 Release|x64
-		{A0C758C8-6ECD-42A2-8796-B966C2C785B4}.Debug|ARM.Build.0 = W8 Release|x64
-		{A0C758C8-6ECD-42A2-8796-B966C2C785B4}.Debug|Win32.ActiveCfg = W8 Debug|Win32
-		{A0C758C8-6ECD-42A2-8796-B966C2C785B4}.Debug|Win32.Build.0 = W8 Debug|Win32
-		{A0C758C8-6ECD-42A2-8796-B966C2C785B4}.Debug|x64.ActiveCfg = W8 Debug|x64
-		{A0C758C8-6ECD-42A2-8796-B966C2C785B4}.Debug|x64.Build.0 = W8 Debug|x64
-		{A0C758C8-6ECD-42A2-8796-B966C2C785B4}.Release|ARM.ActiveCfg = W8 Release|x64
-		{A0C758C8-6ECD-42A2-8796-B966C2C785B4}.Release|ARM.Build.0 = W8 Release|x64
-		{A0C758C8-6ECD-42A2-8796-B966C2C785B4}.Release|Win32.ActiveCfg = W8 Release|Win32
-		{A0C758C8-6ECD-42A2-8796-B966C2C785B4}.Release|Win32.Build.0 = W8 Release|Win32
-		{A0C758C8-6ECD-42A2-8796-B966C2C785B4}.Release|x64.ActiveCfg = W8 Release|x64
-		{A0C758C8-6ECD-42A2-8796-B966C2C785B4}.Release|x64.Build.0 = W8 Release|x64
-		{A0C758C8-6ECD-42A2-8796-B966C2C785B4}.W10 Debug|ARM.ActiveCfg = W10 Debug|Win32
-		{A0C758C8-6ECD-42A2-8796-B966C2C785B4}.W10 Debug|Win32.ActiveCfg = W10 Debug|Win32
-		{A0C758C8-6ECD-42A2-8796-B966C2C785B4}.W10 Debug|Win32.Build.0 = W10 Debug|Win32
-		{A0C758C8-6ECD-42A2-8796-B966C2C785B4}.W10 Debug|x64.ActiveCfg = W10 Debug|x64
-		{A0C758C8-6ECD-42A2-8796-B966C2C785B4}.W10 Debug|x64.Build.0 = W10 Debug|x64
-		{A0C758C8-6ECD-42A2-8796-B966C2C785B4}.W10 Release|ARM.ActiveCfg = W10 Release|Win32
-		{A0C758C8-6ECD-42A2-8796-B966C2C785B4}.W10 Release|Win32.ActiveCfg = W10 Release|Win32
-		{A0C758C8-6ECD-42A2-8796-B966C2C785B4}.W10 Release|Win32.Build.0 = W10 Release|Win32
-		{A0C758C8-6ECD-42A2-8796-B966C2C785B4}.W10 Release|x64.ActiveCfg = W10 Release|x64
-		{A0C758C8-6ECD-42A2-8796-B966C2C785B4}.W10 Release|x64.Build.0 = W10 Release|x64
-		{A0C758C8-6ECD-42A2-8796-B966C2C785B4}.W8 Debug|ARM.ActiveCfg = W8 Debug|Win32
-		{A0C758C8-6ECD-42A2-8796-B966C2C785B4}.W8 Debug|Win32.ActiveCfg = W8 Debug|Win32
-		{A0C758C8-6ECD-42A2-8796-B966C2C785B4}.W8 Debug|Win32.Build.0 = W8 Debug|Win32
-		{A0C758C8-6ECD-42A2-8796-B966C2C785B4}.W8 Debug|x64.ActiveCfg = W8 Debug|x64
-		{A0C758C8-6ECD-42A2-8796-B966C2C785B4}.W8 Debug|x64.Build.0 = W8 Debug|x64
-		{A0C758C8-6ECD-42A2-8796-B966C2C785B4}.W8 Release|ARM.ActiveCfg = W8 Release|Win32
-		{A0C758C8-6ECD-42A2-8796-B966C2C785B4}.W8 Release|Win32.ActiveCfg = W8 Release|Win32
-		{A0C758C8-6ECD-42A2-8796-B966C2C785B4}.W8 Release|Win32.Build.0 = W8 Release|Win32
-		{A0C758C8-6ECD-42A2-8796-B966C2C785B4}.W8 Release|x64.ActiveCfg = W8 Release|x64
-		{A0C758C8-6ECD-42A2-8796-B966C2C785B4}.W8 Release|x64.Build.0 = W8 Release|x64
 		{49BE57EE-620B-4E2C-9C6C-6D53C1B81053}.Debug|ARM.ActiveCfg = W10 Debug|x64
 		{49BE57EE-620B-4E2C-9C6C-6D53C1B81053}.Debug|ARM.Build.0 = W10 Debug|x64
 		{49BE57EE-620B-4E2C-9C6C-6D53C1B81053}.Debug|Win32.ActiveCfg = W10 Debug|Win32
@@ -175,5 +137,8 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {6FBF1E7F-187A-4D9F-B3D6-EB353D40B554}
 	EndGlobalSection
 EndGlobal

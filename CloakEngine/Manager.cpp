@@ -9,9 +9,9 @@ namespace CloakEngine {
 	namespace Impl {
 		namespace Rendering {
 			inline namespace Manager_v1 {
-				IManager* CLOAK_CALL IManager::Create(In API::Global::Graphic::RenderMode Type)
+				CE::RefPointer<IManager> CLOAK_CALL IManager::Create(In API::Global::Graphic::RenderMode Type)
 				{
-					IManager* r = nullptr;
+					CE::RefPointer<IManager> r = nullptr;
 					switch (Type)
 					{
 						case CloakEngine::API::Global::Graphic::RenderMode::DX12:

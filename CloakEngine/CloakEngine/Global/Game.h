@@ -10,16 +10,17 @@
 
 #include <functional>
 
-#if WINAPI_FAMILY == WINAPI_FAMILY_DESKTOP_APP
-#ifdef _WINDOWS
-#define CE_MAIN_FUNCTION() int CALLBACK WinMain(HINSTANCE hInst, HINSTANCE hPrev,LPSTR cmds,int cmdShow)
+#if CHECK_OS(WINDOWS, 0)
+#	if WINAPI_FAMILY == WINAPI_FAMILY_DESKTOP_APP
+#		define CE_MAIN_FUNCTION() int CALLBACK WinMain(HINSTANCE hInst, HINSTANCE hPrev,LPSTR cmds,int cmdShow)
+#	else
+#		define CE_MAIN_FUNCTION() int main()
+#	endif
 #else
-#define CE_MAIN_FUNCTION() int main()
+#	define CE_MAIN_FUNCTION() int main()
 #endif
-#else
-#define CE_MAIN_FUNCTION() int main()
-#endif
-#define CLOAKENGINE_START(gameClass,gameInfo) CE_MAIN_FUNCTION(){return CloakEngine::API::Global::Game::StartGame(gameClass(),gameInfo());}
+
+#define CLOAKENGINE_START(gameClass,gameInfo) CE_MAIN_FUNCTION(){return CloakEngine::API::Global::Game::StartGame(&gameClass(),gameInfo());}
 
 #ifdef _DEBUG
 #define CREATE_INTERFACE(...) CloakEngine::API::Global::Game::CreateInterface(std::string(__FILE__)+" @ "+std::to_string(__LINE__),__VA_ARGS__)
@@ -30,7 +31,7 @@
 namespace CloakEngine {
 	CLOAKENGINE_API_NAMESPACE namespace API {
 		namespace Global {
-			constexpr size_t THREAD_COUNT = 7;
+			constexpr size_t THREAD_COUNT = 8;
 			struct GameInfo {
 				bool useWindow = false;
 				bool useConsole = true;
@@ -40,9 +41,8 @@ namespace CloakEngine {
 			struct FPSInfo {
 				struct {
 					float FPS = 0;
-					unsigned int ID = 0;
 				} Thread[THREAD_COUNT];
-				uint32_t Used = 0;
+				uint32_t Count = 0;
 			};
 			class CLOAKENGINE_API Date {
 				private:
@@ -53,9 +53,15 @@ namespace CloakEngine {
 						{ 0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334, 365 },
 						{ 0, 31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335, 366 }, //Leap Year
 					};
-					static constexpr uint64_t TIME_TO_MINUTES = 60;
-					static constexpr uint64_t TIME_TO_HOURS = TIME_TO_MINUTES * 60;
-					static constexpr uint64_t TIME_TO_DAYS = TIME_TO_HOURS * 24;
+
+					static constexpr uint64_t SECONDS_PER_MINUTE = 60;
+					static constexpr uint64_t MINUTES_PER_HOUR = 60;
+					static constexpr uint64_t HOURS_PER_DAY = 24;
+
+					static constexpr uint64_t TIME_TO_SECONDS = 1;
+					static constexpr uint64_t TIME_TO_MINUTES = TIME_TO_SECONDS * SECONDS_PER_MINUTE;
+					static constexpr uint64_t TIME_TO_HOURS = TIME_TO_MINUTES * MINUTES_PER_HOUR;
+					static constexpr uint64_t TIME_TO_DAYS = TIME_TO_HOURS * HOURS_PER_DAY;
 
 					inline constexpr bool CLOAK_CALL_THIS isLeap(In uint32_t year) { return year % 4 == 0 && (year % 100 != 0 || year % 400 == 0); }
 					inline constexpr uint64_t CLOAK_CALL_THIS iToTime(In uint32_t year, In uint32_t month, In uint32_t day, In uint32_t hour, In uint32_t minute, In uint32_t second)
@@ -69,7 +75,7 @@ namespace CloakEngine {
 							const uint32_t diy = (py * 365) + (py / 4) + (py / 400) - (py / 100);
 							day += (DAYS_IN_MONTH[dim][month - 1] - 1) + diy;
 						}
-						return second + (60ULL * (minute + (60ULL * (hour + (24ULL * day)))));
+						return second + (SECONDS_PER_MINUTE * (minute + (MINUTES_PER_HOUR * (hour + (HOURS_PER_DAY * day)))));
 					}
 				public:
 					constexpr CLOAK_CALL Date(In_opt uint64_t time = 0) : m_time(time) {}
@@ -104,22 +110,23 @@ namespace CloakEngine {
 					inline constexpr uint64_t CLOAK_CALL_THIS TotalDays() const { return m_time / TIME_TO_DAYS; }
 					inline constexpr uint64_t CLOAK_CALL_THIS TotalHours() const { return m_time / TIME_TO_HOURS; }
 					inline constexpr uint64_t CLOAK_CALL_THIS TotalMinutes() const { return m_time / TIME_TO_MINUTES; }
-					inline constexpr uint64_t CLOAK_CALL_THIS TotalSeconds() const { return m_time; }
+					inline constexpr uint64_t CLOAK_CALL_THIS TotalSeconds() const { return m_time / TIME_TO_SECONDS; }
 
-					inline constexpr uint32_t CLOAK_CALL_THIS Day() const { return static_cast<uint32_t>(m_time / TIME_TO_DAYS); }
-					inline constexpr uint32_t CLOAK_CALL_THIS Hour() const { return static_cast<uint32_t>((m_time / TIME_TO_HOURS) % 24); }
-					inline constexpr uint32_t CLOAK_CALL_THIS Minute() const { return static_cast<uint32_t>((m_time / TIME_TO_MINUTES) % 60); }
-					inline constexpr uint32_t CLOAK_CALL_THIS Second() const { return static_cast<uint32_t>(m_time % 60); }
+					inline constexpr uint32_t CLOAK_CALL_THIS Day() const { return static_cast<uint32_t>(TotalDays()); }
+					inline constexpr uint32_t CLOAK_CALL_THIS Hour() const { return static_cast<uint32_t>(TotalHours() % HOURS_PER_DAY); }
+					inline constexpr uint32_t CLOAK_CALL_THIS Minute() const { return static_cast<uint32_t>(TotalMinutes() % MINUTES_PER_HOUR); }
+					inline constexpr uint32_t CLOAK_CALL_THIS Second() const { return static_cast<uint32_t>(TotalSeconds() % SECONDS_PER_MINUTE); }
 			};
 			namespace Game {
-				CLOAKENGINE_API void CLOAK_CALL StartEngine(In const IGameEventFactory* factory, In const GameInfo& info);
-				CLOAKENGINE_API void CLOAK_CALL StartEngineAsync(In const IGameEventFactory* factory, In const GameInfo& info);
-				CLOAKENGINE_API void CLOAK_CALL StartEngine(In const IGameEventFactory* factory, In const GameInfo& info, In HWND window);
-				CLOAKENGINE_API void CLOAK_CALL StartEngineAsync(In const IGameEventFactory* factory, In const GameInfo& info, In HWND window);
+				CLOAKENGINE_API bool CLOAK_CALL CheckVersion(In_opt uint32_t version = CLOAKENGINE_VERSION);
+				CLOAKENGINE_API void CLOAK_CALL StartEngine(In IGameEventFactory* factory, In const GameInfo& info);
+				CLOAKENGINE_API void CLOAK_CALL StartEngineAsync(In IGameEventFactory* factory, In const GameInfo& info);
+				CLOAKENGINE_API void CLOAK_CALL StartEngine(In IGameEventFactory* factory, In const GameInfo& info, In HWND window);
+				CLOAKENGINE_API void CLOAK_CALL StartEngineAsync(In IGameEventFactory* factory, In const GameInfo& info, In HWND window);
 				CLOAKENGINE_API void CLOAK_CALL Stop();
 				CLOAKENGINE_API void CLOAK_CALL WaitForStop();
 				CLOAKENGINE_API void CLOAK_CALL SetFPS(In_opt float fps = 0.0f);
-				CLOAKENGINE_API void CLOAK_CALL GetFPS(Out FPSInfo* info);
+				CLOAKENGINE_API float CLOAK_CALL GetFPS(Out_opt FPSInfo* info = nullptr);
 				CLOAKENGINE_API bool CLOAK_CALL IsRunning();
 				CLOAKENGINE_API bool CLOAK_CALL IsDebugMode();
 				CLOAKENGINE_API bool CLOAK_CALL HasWindow();

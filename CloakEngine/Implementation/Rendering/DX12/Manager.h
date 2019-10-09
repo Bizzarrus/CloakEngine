@@ -36,7 +36,6 @@ namespace CloakEngine {
 							void CLOAK_CALL_THIS ShutdownAdapters() override;
 							void CLOAK_CALL_THIS ShutdownMemory() override;
 							void CLOAK_CALL_THIS ShutdownDevice() override;
-							void CLOAK_CALL_THIS IdleGPU() override;
 							void CLOAK_CALL_THIS GenerateViews(In_reads(bufferSize) API::Rendering::IResource* buffer[], In_opt size_t bufferSize = 1, In_opt API::Rendering::VIEW_TYPE Type = API::Rendering::VIEW_TYPE::ALL, In_opt API::Rendering::DescriptorPageType page = API::Rendering::DescriptorPageType::UTILITY) override;
 							void CLOAK_CALL_THIS GenerateViews(In_reads(bufferSize) API::Rendering::IPixelBuffer* buffer[], In_opt size_t bufferSize = 1, In_opt API::Rendering::VIEW_TYPE Type = API::Rendering::VIEW_TYPE::ALL, In_opt API::Rendering::DescriptorPageType page = API::Rendering::DescriptorPageType::UTILITY) override;
 							void CLOAK_CALL_THIS GenerateViews(In_reads(bufferSize) API::Rendering::IColorBuffer* buffer[], In_opt size_t bufferSize = 1, In_opt API::Rendering::VIEW_TYPE Type = API::Rendering::VIEW_TYPE::ALL, In_opt API::Rendering::DescriptorPageType page = API::Rendering::DescriptorPageType::WORLD) override;
@@ -68,7 +67,7 @@ namespace CloakEngine {
 							IColorBuffer* CLOAK_CALL_THIS CreateColorBuffer(In ISwapChain* base, In uint32_t textureNum) const override;
 							IColorBuffer* CLOAK_CALL_THIS CreateColorBuffer(In const API::Rendering::TEXTURE_DESC& desc, In size_t nodeID, In UINT nodeMask) const override;
 							IDepthBuffer* CLOAK_CALL_THIS CreateDepthBuffer(In const API::Rendering::DEPTH_DESC& desc, In size_t nodeID, In UINT nodeMask) const override;
-							ISwapChain* CLOAK_CALL_THIS CreateSwapChain(In const API::Global::Graphic::Settings& gset, Out_opt HRESULT* hRet = nullptr) override;
+							CE::RefPointer<ISwapChain> CLOAK_CALL_THIS CreateSwapChain(In const API::Global::Graphic::Settings& gset, Out_opt HRESULT* hRet = nullptr) override;
 							bool CLOAK_CALL_THIS EnumerateAdapter(In size_t id, Out std::string* name) const override;
 							size_t CLOAK_CALL_THIS GetNodeCount() const override;
 							const API::Rendering::Hardware& CLOAK_CALL_THIS GetHardwareSetting() const override;

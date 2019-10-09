@@ -139,14 +139,20 @@ template<typename T> struct remove_pointer<T*> { typedef typename remove_pointer
 
 template<typename T> struct remove_rp { typedef typename remove_ref<typename remove_pointer<T>::type>::type type; };
 
-//Calculates to byte offset of a given member to it's parent beginning
-template<typename A, typename B> constexpr size_t offset_of(B A::*member) { return static_cast<size_t>(reinterpret_cast<uintptr_t>(&(static_cast<A*>(nullptr)->*member))); }
-//Given a pointer to a member, returns the pointer to it's parent
+//Calculates the byte offset of a given member to its parent beginning
+template<typename A, typename B> size_t offset_of(B A::*member) { return static_cast<size_t>(reinterpret_cast<uintptr_t>(&(static_cast<A*>(nullptr)->*member))); }
+//Calculates the byte offset of a child class within its parent class. Add this to a Child-pointer value to get a Parent-pointer
+template<typename Parent, typename Child> size_t offset_of() 
+{
+	static_assert(std::is_base_of_v<Parent, Child>, "Child does not inherit from parent!");
+	return static_cast<size_t>(reinterpret_cast<uintptr_t>(static_cast<Parent*>(reinterpret_cast<Child*>(static_cast<uintptr_t>(1)))) - static_cast<uintptr_t>(1)); 
+}
+//Given a pointer to a member, returns the pointer to its parent
 template<typename A, typename B> A* get_from_member(B A::*member, const B* b)
 {
 	if (b == nullptr) { return nullptr; }
 	return reinterpret_cast<A*>(reinterpret_cast<uintptr_t>(b) - offset_of(member)); 
-}
+} 
 
 template<typename T, size_t N> constexpr size_t array_size(T(&)[N]) { return N; }
 template<typename T> constexpr inline bool IsFlagSet(T v, T mask, T option) { return (v & mask) == option; }

@@ -21,6 +21,7 @@ namespace CloakEngine {
 				enum class RenderMode { DX12 };
 				enum class BloomMode { DISABLED, NORMAL, HIGH_QUALITY };
 				enum class MSAA {DISABLED = 1, MSAAx2 = 2, MSAAx4 = 4, MSAAx8 = 8};
+				enum class InputDelayPrevention { Disabled, Level1, Level2, Level3 };
 				struct Settings {
 					uint32_t ShadowMapResolution;
 					uint32_t AdapterID;

@@ -32,7 +32,9 @@ namespace CloakEngine {
 						virtual void CLOAK_CALL_THIS setSlotCount(In size_t count) = 0;
 				};
 				template class CLOAKENGINE_API CE::RefPointer<ISyncSection>;
+				class ReadWriteLock;
 				class CLOAKENGINE_API Lock {
+					friend class ReadWriteLock;
 					private:
 						CE::RefPointer<ISyncSection> m_sync;
 					public:
@@ -89,6 +91,7 @@ namespace CloakEngine {
 						}
 				};
 				class CLOAKENGINE_API ReadLock {
+					friend class ReadWriteLock;
 					private:
 						CE::RefPointer<ISyncSection> m_sync;
 					public:
@@ -148,6 +151,104 @@ namespace CloakEngine {
 						}
 				};
 				typedef Lock WriteLock;
+				class CLOAKENGINE_API ReadWriteLock {
+					private:
+						typedef SyncSection_v1::ISyncSection section_t;
+						static constexpr uintptr_t MODE_MASK = std::alignment_of<section_t*>::value - 1;
+						static constexpr uintptr_t READ_MODE = 0 & MODE_MASK;
+						static constexpr uintptr_t WRITE_MODE = 1 & MODE_MASK;
+
+						uintptr_t m_sync;
+
+						CLOAK_FORCEINLINE section_t* CLOAK_CALL_THIS GetSection() const { return reinterpret_cast<section_t*>(m_sync & ~MODE_MASK); }
+						CLOAK_FORCEINLINE bool CLOAK_CALL_THIS IsWriteMode() const { return IsFlagSet(m_sync, WRITE_MODE); }
+						CLOAK_FORCEINLINE void CLOAK_CALL_THIS SetSection(In section_t* s, In bool write) 
+						{
+							if (s != nullptr)
+							{
+								s->AddRef();
+								if (write == true) { s->lockExclusive(); }
+								else { s->lockShared(); }
+							}
+							m_sync = reinterpret_cast<uintptr_t>(s) | (write == true ? WRITE_MODE : READ_MODE); 
+						}
+						CLOAK_FORCEINLINE void CLOAK_CALL_THIS SetSection(In IConditionSyncSection* s, In bool write, In std::function<bool()> condition)
+						{
+							if (s != nullptr)
+							{
+								s->AddRef();
+								if (write == true) { s->lockExclusive(condition); }
+								else { s->lockShared(condition); }
+							}
+							m_sync = reinterpret_cast<uintptr_t>(static_cast<section_t*>(s)) | (write == true ? WRITE_MODE : READ_MODE);
+						}
+						CLOAK_FORCEINLINE void CLOAK_CALL_THIS iUnlock() const
+						{
+							section_t* s = GetSection();
+							if (s != nullptr)
+							{
+								if (IsWriteMode() == true) { s->unlockExclusive(); }
+								else { s->unlockShared(); }
+								s->Release();
+							}
+						}
+					public:
+						CLOAK_CALL_THIS ReadWriteLock() : m_sync(0) {}
+						explicit CLOAK_CALL_THIS ReadWriteLock(In const CE::RefPointer<section_t>& ptr) { SetSection(ptr.Get(), true); }
+						CLOAK_CALL_THIS ReadWriteLock(In const CE::RefPointer<IConditionSyncSection>& ptr, In std::function<bool()> condition) { SetSection(ptr.Get(), true); }
+						CLOAK_CALL_THIS ReadWriteLock(In const ReadWriteLock& lock) : m_sync(lock.m_sync) 
+						{
+							section_t* s = GetSection();
+							if (s != nullptr)
+							{
+								s->AddRef();
+								s->lockExclusive();
+							}
+						}
+						CLOAK_CALL_THIS ReadWriteLock(In ReadWriteLock&& lock) : m_sync(lock.m_sync) { lock.m_sync = 0; }
+						CLOAK_CALL_THIS ReadWriteLock(In const ReadLock& lock) { SetSection(lock.m_sync.Get(), false); }
+						CLOAK_CALL_THIS ReadWriteLock(In const WriteLock& lock) { SetSection(lock.m_sync.Get(), true); }
+						CLOAK_CALL_THIS ~ReadWriteLock() { iUnlock(); }
+						inline void CLOAK_CALL_THIS unlock()
+						{
+							iUnlock();
+							m_sync = 0;
+						}
+						inline void CLOAK_CALL_THIS lock(In const CE::RefPointer<section_t>& ptr)
+						{
+							iUnlock();
+							SetSection(ptr.Get(), true);
+						}
+						inline void CLOAK_CALL_THIS lock(In const CE::RefPointer<IConditionSyncSection>& ptr, In std::function<bool()> condition)
+						{
+							iUnlock();
+							SetSection(ptr.Get(), true, condition);
+						}
+						inline ReadWriteLock& CLOAK_CALL_THIS operator=(In const ReadWriteLock& o)
+						{
+							if (m_sync != o.m_sync)
+							{
+								section_t* s = o.GetSection();
+								s->AddRef();
+								iUnlock();
+								SetSection(s, o.IsWriteMode());
+								s->Release();
+							}
+							return *this;
+						}
+						inline ReadWriteLock& CLOAK_CALL_THIS operator=(In const ReadLock& o)
+						{
+							iUnlock();
+							SetSection(o.m_sync.Get(), false);
+							return *this;
+						}
+						inline ReadWriteLock& CLOAK_CALL_THIS operator=(In const WriteLock& o)
+						{
+							iUnlock();
+							SetSection(o.m_sync.Get(), true);
+							return *this;
+						}
+				};
 			}
 		}
 	}

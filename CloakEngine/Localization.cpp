@@ -46,7 +46,7 @@ namespace CloakEngine {
 						{
 							Engine::WindowHandler::setWindowName(g_windName->GetAsString());
 							lock.unlock();
-							Impl::Global::Game::onGameLangUpdate();
+							//Impl::Global::Game::onGameLangUpdate();
 						}
 					}
 				}

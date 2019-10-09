@@ -27,7 +27,7 @@ namespace CloakEngine {
 				return DefWindowProc(hWnd, msg, wParam, lParam);
 			}
 			void CLOAK_CALL SetLauncherResult(In bool res) { g_result = res; }
-			bool CLOAK_CALL StartLauncher(In API::Global::ILauncherEvent* events, Inout Impl::Global::Game::ThreadSleepInfo* tsi)
+			bool CLOAK_CALL StartLauncher(In API::Global::ILauncherEvent* events, Inout Impl::Global::Game::ThreadSleepState* tsi)
 			{
 				if (events == nullptr) 
 				{ 
@@ -50,7 +50,7 @@ namespace CloakEngine {
 							TranslateMessage(&msg);
 							DispatchMessage(&msg);
 						}
-						Sleep(Impl::Global::Game::threadSleep(ctm, SLEEP_TIME, tsi));
+						Sleep(static_cast<DWORD>(tsi->GetSleepTime(ctm, SLEEP_TIME) / 1000));
 					}
 					SAVE_RELEASE(g_manager);
 				}

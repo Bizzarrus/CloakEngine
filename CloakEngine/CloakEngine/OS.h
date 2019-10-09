@@ -259,7 +259,7 @@
 #	define CE_COMPILER_TYPE CE_COMPILER_MicrosoftVisualCpp
 #	define CE_COMPILER_VERSION _MSC_VER
 #	define CE_COMPILER_REVISION _MSC_BUILD
-#	define CE_LANG_VERSION (_MSVC_LANG / 100)
+#	define CE_LANG_VERSION (_MSVC_LANG / 100L)
 #elif defined(_MRI)
 #	define CE_COMPILER_TYPE CE_COMPILER_Microtec
 #elif defined(__NDPC__)

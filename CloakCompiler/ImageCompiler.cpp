@@ -111,7 +111,7 @@ namespace CloakCompiler {
 						if (file != nullptr)
 						{
 							file->MoveToNextByte();
-							CE::RefPointer<CE::Files::IMultithreadedWriteBuffer> fileBuffer = CE::Files::CreateMultithreadedWriteBuffer(file, CE::Global::Threading::ScheduleHint::IO);
+							CE::RefPointer<CE::Files::IMultithreadedWriteBuffer> fileBuffer = CE::Files::CreateMultithreadedWriteBuffer(file, CE::Global::Threading::Flag::IO);
 							fileBuffer->SetFinishTask(finish);
 							CE::Global::Task writeTemp = CE::Global::PushTask([&entries, finish, &err, &encode, &BitInfos, &response](In size_t threadID) {
 								if (err == false)
@@ -125,7 +125,7 @@ namespace CloakCompiler {
 												entries[a].second->WriteTemp(encode, BitInfos, response, a + 1);
 											});
 											finish.AddDependency(t);
-											t.Schedule(CE::Global::Threading::ScheduleHint::IO, threadID);
+											t.Schedule(CE::Global::Threading::Flag::IO, threadID);
 										}
 									}
 								}
@@ -206,7 +206,7 @@ namespace CloakCompiler {
 												entries[a].second->CheckTemp(encode, BitInfos, response, a + 1);
 											});
 											enc.AddDependency(t);
-											t.Schedule(CE::Global::Threading::ScheduleHint::IO, threadID);
+											t.Schedule(CE::Global::Threading::Flag::IO, threadID);
 										}
 										writeHeader.AddDependency(enc);
 										enc.Schedule(threadID);
@@ -297,7 +297,7 @@ namespace CloakCompiler {
 								Engine::Lib::WriteHeaderOutro(header, 0);
 							});
 							finish.AddDependency(writeMainHeader);
-							writeMainHeader.Schedule(CE::Global::Threading::ScheduleHint::IO);
+							writeMainHeader.Schedule(CE::Global::Threading::Flag::IO);
 							CE::Global::Task compileLib = CE::Global::PushTask([&err, &desc](In size_t threadID) {
 								if (err == false)
 								{
@@ -316,7 +316,7 @@ namespace CloakCompiler {
 								Engine::Lib::WriteHeaderOutro(file, 0);
 							});
 							compileLib.AddDependency(writeCommonHeader);
-							writeCommonHeader.Schedule(CE::Global::Threading::ScheduleHint::IO);
+							writeCommonHeader.Schedule(CE::Global::Threading::Flag::IO);
 
 							writeLib = CE::Global::PushTask([&entries, &desc, &err, compileLib, &cmake, &BitInfos](In size_t threadID) {
 								if (err == false)
@@ -354,7 +354,7 @@ namespace CloakCompiler {
 										tabCount = Engine::Lib::WriteCommonOutro(file, tabCount);
 									});
 									compileLib.AddDependency(writeMainFile);
-									writeMainFile.Schedule(CE::Global::Threading::ScheduleHint::IO);
+									writeMainFile.Schedule(CE::Global::Threading::Flag::IO);
 									for (size_t a = 0; a < entries.size(); a++)
 									{
 										CE::Global::Task entryFiles = CE::Global::PushTask([&desc, &entries, a, compileLib, &cmake, &BitInfos](In size_t threadID) {
@@ -386,8 +386,8 @@ namespace CloakCompiler {
 										});
 										compileLib.AddDependency(entryFiles);
 										compileLib.AddDependency(entryHeader);
-										entryFiles.Schedule(CE::Global::Threading::ScheduleHint::IO);
-										entryHeader.Schedule(CE::Global::Threading::ScheduleHint::IO);
+										entryFiles.Schedule(CE::Global::Threading::Flag::IO);
+										entryHeader.Schedule(CE::Global::Threading::Flag::IO);
 									}
 								}
 							});

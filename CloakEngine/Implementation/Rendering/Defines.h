@@ -413,11 +413,6 @@ namespace CloakEngine {
 			struct SWAPCHAIN_MODE {
 				UINT Width;
 				UINT Height;
-				API::Rendering::Format Format;
-				struct {
-					UINT Numerator;
-					UINT Denominator;
-				} RefreshRate;
 				SCANLINE_ORDER ScanlineOrdering;
 				SCALING Scaling;
 			};

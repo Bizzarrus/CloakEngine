@@ -276,23 +276,23 @@ namespace CloakCompiler {
 									cmake.AddFile(hName + ".h");
 
 									CE::RefPointer<CloakEngine::Files::IWriter> file = Engine::Lib::CreateSourceFile(lib.Path, hName, "H");
-									Engine::Lib::WriteHeaderIntro(file, Engine::Lib::Type::Image, lib.Name + "_" + hName, desc.Lib.Path.GetHash());
+									Engine::Lib::WriteHeaderIntro(file, Engine::Lib::Type::Image, lib.Name + "_" + hName, lib.Path.GetHash());
 									Engine::Lib::WriteWithTabs(file, 0, "#include \"Common.h\"");
 									Engine::Lib::WriteWithTabs(file, 0, "");
-									size_t tabCount = Engine::Lib::WriteCommonIntro(file, Engine::Lib::Type::Image, desc.Lib.Name);
+									size_t tabCount = Engine::Lib::WriteCommonIntro(file, Engine::Lib::Type::Image, lib.Name);
 									Engine::Lib::WriteWithTabs(file, tabCount, "bool Get" + std::to_string(entryID) + "T" + std::to_string(a) + "(Image* result);");
 									tabCount = Engine::Lib::WriteCommonOutro(file, tabCount);
 									Engine::Lib::WriteHeaderOutro(file, 0);
 									file->Save();
 								});
-								CE::Global::Task writeFile = CE::Global::PushTask([hName, &cmake, &lib, entryID, a, m_textures, m_channel, &bits](In size_t threadID) {
+								CE::Global::Task writeFile = CE::Global::PushTask([hName, &cmake, &lib, entryID, a, this, &bits](In size_t threadID) {
 									cmake.AddFile(hName + ".cpp");
 
 									CE::RefPointer<CloakEngine::Files::IWriter> file = Engine::Lib::CreateSourceFile(lib.Path, hName, "CPP");
 									Engine::Lib::WriteCopyright(file);
 									Engine::Lib::WriteWithTabs(file, 0, "#include \"" + hName + ".h\"");
 									Engine::Lib::WriteWithTabs(file, 0, "");
-									size_t tabCount = Engine::Lib::WriteCommonIntro(file, Engine::Lib::Type::Image, desc.Lib.Name);
+									size_t tabCount = Engine::Lib::WriteCommonIntro(file, Engine::Lib::Type::Image, lib.Name);
 									Lib::EncodeTexture(file, m_textures[a], m_channel, bits, lib.WriteMipMaps, entryID, a, tabCount);
 									Engine::Lib::WriteWithTabs(file, tabCount, "");
 									Engine::Lib::WriteWithTabs(file, tabCount, "bool Get" + std::to_string(entryID) + "T" + std::to_string(a) + "(Image* result)");
@@ -305,8 +305,8 @@ namespace CloakCompiler {
 								});
 								finishTask.AddDependency(writeHeader);
 								finishTask.AddDependency(writeFile);
-								writeHeader.Schedule(CE::Global::Threading::ScheduleHint::IO);
-								writeFile.Schedule(CE::Global::Threading::ScheduleHint::IO);
+								writeHeader.Schedule(CE::Global::Threading::Flag::IO);
+								writeFile.Schedule(CE::Global::Threading::Flag::IO);
 							}
 							Engine::Lib::WriteWithTabs(file, 0, "");
 						}

@@ -1,4 +1,5 @@
 #include "stdafx.h"
+#include "Implementation/Global/Task.h"
 #include "Implementation/Rendering/DX12/Queue.h"
 #include "Implementation/Rendering/DX12/Context.h"
 #include "Implementation/Rendering/DX12/StructuredBuffer.h"
@@ -532,13 +533,18 @@ namespace CloakEngine {
 						{
 							m_fence->SetEventOnCompletion(val, m_fenceEvent);
 							lock.unlock();
-							DWORD e = WAIT_TIMEOUT;
-							bool r = true;
-							do {
-								e = WaitForSingleObject(m_fenceEvent, MAX_WAIT);
-								r = IsFenceComplete(val) == false && Global::Game::canThreadRun();
-							} while (r && e == WAIT_TIMEOUT);
-							return r;
+							Impl::Global::Task::IHelpWorker* worker = Impl::Global::Task::GetCurrentWorker();
+							if (worker != nullptr)
+							{
+								worker->HelpWorkUntil([val, this]() { return IsFenceComplete(val); }, API::Global::Threading::Flag::None);
+							}
+							else
+							{
+								DWORD e = WAIT_TIMEOUT;
+								do {
+									e = WaitForSingleObject(m_fenceEvent, MAX_WAIT);
+								} while (IsFenceComplete(val) == false && e == WAIT_TIMEOUT);
+							}
 						}
 						return true;
 					}

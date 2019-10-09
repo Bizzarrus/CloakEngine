@@ -21,7 +21,7 @@ namespace CloakEngine {
 					public:
 						virtual void CLOAK_CALL_THIS OnInit() = 0;
 						virtual void CLOAK_CALL_THIS OnStart() = 0;
-						virtual void CLOAK_CALL_THIS OnUpdate(In Global::Time etime) = 0;
+						virtual void CLOAK_CALL_THIS OnUpdate(In Global::Time etime, In Global::Time scaledGameTime, In bool inLoadingScreen) = 0;
 						virtual void CLOAK_CALL_THIS OnStop() = 0;
 						virtual void CLOAK_CALL_THIS OnPause() = 0;
 						virtual void CLOAK_CALL_THIS OnResume() = 0;
@@ -54,12 +54,11 @@ namespace CloakEngine {
 				};
 				CLOAK_INTERFACE IGameEventFactory{
 					public:
-						virtual void CLOAK_CALL_THIS Delete() const = 0;
-						virtual IGameEvent* CLOAK_CALL_THIS CreateGame() const = 0;
-						virtual ILauncherEvent* CLOAK_CALL_THIS CreateLauncher() const = 0;
-						virtual IInputEvent* CLOAK_CALL_THIS CreateInput() const = 0;
-						virtual ILobbyEvent* CLOAK_CALL_THIS CreateLobby() const = 0;
-						virtual IDebugEvent* CLOAK_CALL_THIS CreateDebug() const = 0;
+						virtual IGameEvent* CLOAK_CALL_THIS CreateGame() = 0;
+						virtual ILauncherEvent* CLOAK_CALL_THIS CreateLauncher() = 0;
+						virtual IInputEvent* CLOAK_CALL_THIS CreateInput() = 0;
+						virtual ILobbyEvent* CLOAK_CALL_THIS CreateLobby() = 0;
+						virtual IDebugEvent* CLOAK_CALL_THIS CreateDebug() = 0;
 				};
 			}
 		}

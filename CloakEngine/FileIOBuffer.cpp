@@ -205,7 +205,7 @@ namespace CloakEngine {
 					{
 						Impl::Global::Task::IHelpWorker* worker = Impl::Global::Task::GetCurrentWorker();
 #ifdef USE_THREADPOOLIO
-						worker->HelpWorkWhile([f, fence]() { return f->LastFence.load() < fence; }, ~API::Global::Threading::Help::IO);
+						worker->HelpWorkWhile([f, fence]() { return f->LastFence.load() < fence; }, ~API::Global::Threading::Flag::IO);
 #else
 						worker->HelpWorkWhile([f, fence]() {
 							DWORD byteCount = 0;
@@ -230,7 +230,7 @@ namespace CloakEngine {
 								}
 							}
 							return f->LastFence.load() < fence;
-						}, ~API::Global::Threading::Help::IO);
+						}, ~API::Global::Threading::Flag::IO);
 #endif
 					}
 				}

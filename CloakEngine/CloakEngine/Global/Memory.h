@@ -2744,6 +2744,12 @@ namespace CloakEngine {
 				inline bool CLOAK_CALL_THIS operator!=(In nullptr_t) const { return m_ptr != nullptr; }
 				inline bool CLOAK_CALL_THIS operator==(In A* ptr) const { return m_ptr == ptr; }
 				inline bool CLOAK_CALL_THIS operator!=(In A* ptr) const { return m_ptr != ptr; }
+				inline bool CLOAK_CALL_THIS operator==(In const A* ptr) const { return m_ptr == ptr; }
+				inline bool CLOAK_CALL_THIS operator!=(In const A* ptr) const { return m_ptr != ptr; }
+				inline bool CLOAK_CALL_THIS operator==(In volatile A* ptr) const { return m_ptr == ptr; }
+				inline bool CLOAK_CALL_THIS operator!=(In volatile A* ptr) const { return m_ptr != ptr; }
+				inline bool CLOAK_CALL_THIS operator==(In const volatile A* ptr) const { return m_ptr == ptr; }
+				inline bool CLOAK_CALL_THIS operator!=(In const volatile A* ptr) const { return m_ptr != ptr; }
 				inline bool CLOAK_CALL_THIS operator==(In const RefPointer& o) const { return m_ptr == o.m_ptr; }
 				inline bool CLOAK_CALL_THIS operator!=(In const RefPointer& o) const { return m_ptr != o.m_ptr; }
 
@@ -2751,8 +2757,19 @@ namespace CloakEngine {
 				friend inline bool CLOAK_CALL operator!=(In nullptr_t, In const RefPointer& o) { return o != nullptr; }
 				friend inline bool CLOAK_CALL operator==(In A* ptr, In const RefPointer& o) { return o == ptr; }
 				friend inline bool CLOAK_CALL operator!=(In A* ptr, In const RefPointer& o) { return o != ptr; }
+				friend inline bool CLOAK_CALL operator==(In const A* ptr, In const RefPointer& o) { return o == ptr; }
+				friend inline bool CLOAK_CALL operator!=(In const A* ptr, In const RefPointer& o) { return o != ptr; }
+				friend inline bool CLOAK_CALL operator==(In volatile A* ptr, In const RefPointer& o) { return o == ptr; }
+				friend inline bool CLOAK_CALL operator!=(In volatile A* ptr, In const RefPointer& o) { return o != ptr; }
+				friend inline bool CLOAK_CALL operator==(In const volatile A* ptr, In const RefPointer& o) { return o == ptr; }
+				friend inline bool CLOAK_CALL operator!=(In const volatile A* ptr, In const RefPointer& o) { return o != ptr; }
 
 				//Set
+				void CLOAK_CALL_THIS Free() 
+				{ 
+					if (m_ptr != nullptr) { m_ptr->Release(); } 
+					m_ptr = nullptr;
+				}
 				RefPointer& CLOAK_CALL_THIS operator=(In nullptr_t)
 				{
 					if (m_ptr != nullptr) { m_ptr->Release(); }

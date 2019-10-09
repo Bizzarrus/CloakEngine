@@ -112,7 +112,7 @@ namespace CloakEngine {
 					}
 					else 
 					{
-						API::Helper::Lock lock(g_syncDefaultGameID);
+						API::Helper::ReadLock lock(g_syncDefaultGameID);
 						SetTarget(buffer, type, Type, &g_defaultGameID, txt);
 					}
 				}
@@ -132,7 +132,7 @@ namespace CloakEngine {
 					}
 					else
 					{
-						API::Helper::Lock lock(g_syncDefaultGameID);
+						API::Helper::ReadLock lock(g_syncDefaultGameID);
 						SetTarget(ufi.OpenWriter(false, type.Type), type, Type, &g_defaultGameID, txt);
 					}
 				}
@@ -504,7 +504,7 @@ namespace CloakEngine {
 					if (g_hasDefaultGameID == false || txt == true) { return SetTarget(buffer, type, true, nullptr, txt); }
 					else
 					{
-						API::Helper::Lock lock(g_syncDefaultGameID);
+						API::Helper::ReadLock lock(g_syncDefaultGameID);
 						return SetTarget(buffer, type, true, &g_defaultGameID, txt);
 					}
 				}
@@ -524,7 +524,7 @@ namespace CloakEngine {
 					}
 					else
 					{
-						API::Helper::Lock lock(g_syncDefaultGameID);
+						API::Helper::ReadLock lock(g_syncDefaultGameID);
 						return SetTarget(ufi.OpenReader(silentTry, type.Type), type, !silentTry, &g_defaultGameID, txt);
 					}
 				}
@@ -838,7 +838,7 @@ namespace CloakEngine {
 			namespace Compressor_v2 {
 				CLOAKENGINE_API void CLOAK_CALL SetDefaultGameID(In const Buffer_v1::UGID& gameID)
 				{
-					API::Helper::Lock lock(Impl::Files::g_syncDefaultGameID);
+					API::Helper::WriteLock lock(Impl::Files::g_syncDefaultGameID);
 					Impl::Files::g_defaultGameID = gameID;
 					Impl::Files::g_hasDefaultGameID = true;
 				}

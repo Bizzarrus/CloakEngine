@@ -60,6 +60,37 @@ namespace CloakEngine {
 						API::FlatMap<API::World::Component*, std::pair<void*, type_id>> m_toRemove;
 				};
 			}
+			namespace Entity_v2 {
+				typedef uint64_t EntityID;
+				class CLOAK_UUID("{89F09229-0DA2-482E-B354-EF891B97510C}") Entity : public virtual API::World::Entity_v2::IEntity {
+					public:
+						CLOAK_CALL Entity();
+						CLOAK_CALL ~Entity();
+
+						uint64_t CLOAK_CALL_THIS AddRef() override;
+						uint64_t CLOAK_CALL_THIS Release() override;
+
+						void* CLOAK_CALL operator new(In size_t size);
+						void CLOAK_CALL operator delete(In void* ptr);
+					protected:
+						void CLOAK_CALL_THIS SetAlias(In const type_name & aliasID, In const type_name & realID, In size_t offsetToAlias, In size_t size, In size_t alignment, In size_t offsetToBase) override;
+						void* CLOAK_CALL_THIS GetComponent(In const type_name & id) const override;
+						void CLOAK_CALL_THIS RemoveComponent(In const type_name & id) override;
+						void* CLOAK_CALL_THIS AllocateComponent(In const type_name & id, In size_t size, In size_t alignment, In size_t offset, Out void** type) override;
+						void* CLOAK_CALL_THIS CreateComponent(In const type_name & id, In void* src) override;
+						void CLOAK_CALL_THIS ComponentAddRef() override;
+						void CLOAK_CALL_THIS ComponentRelease() override;
+					
+						const EntityID m_id;
+						std::atomic<uint64_t> m_ref;
+						std::atomic<uint64_t> m_cref;
+						std::atomic<bool> m_blocked;
+				};
+
+				void CLOAK_CALL Initialize();
+				void CLOAK_CALL ReleaseSyncs();
+				void CLOAK_CALL Terminate();
+			}
 		}
 	}
 }

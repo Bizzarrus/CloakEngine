@@ -29,8 +29,8 @@ namespace CloakEngine {
 				CLOAKENGINE_API CE::RefPointer<IHTTPReadBuffer> CLOAK_CALL CreateHTTPRead(In const std::string& host, In_opt HTTPMethod method = HTTPMethod::GET, In_opt uint16_t port = 80);
 				CLOAKENGINE_API CE::RefPointer<IHTTPReadBuffer> CLOAK_CALL CreateHTTPRead(In const std::string& host, In uint16_t port, In_opt HTTPMethod method = HTTPMethod::GET);
 				CLOAKENGINE_API CE::RefPointer<IHTTPReadBuffer> CLOAK_CALL CreateHTTPRead();
-				CLOAKENGINE_API CE::RefPointer<IMultithreadedWriteBuffer> CLOAK_CALL CreateMultithreadedWriteBuffer(In const CE::RefPointer<IWriteBuffer>& dst, In_opt std::function<void(In void* userData, In uint64_t size)> onWrite = nullptr, In_opt API::Global::Threading::ScheduleHint writingHint = API::Global::Threading::ScheduleHint::None);
-				CLOAKENGINE_API CE::RefPointer<IMultithreadedWriteBuffer> CLOAK_CALL CreateMultithreadedWriteBuffer(In const CE::RefPointer<IWriteBuffer>& dst, In API::Global::Threading::ScheduleHint writingHint);
+				CLOAKENGINE_API CE::RefPointer<IMultithreadedWriteBuffer> CLOAK_CALL CreateMultithreadedWriteBuffer(In const CE::RefPointer<IWriteBuffer>& dst, In_opt std::function<void(In void* userData, In uint64_t size)> onWrite = nullptr, In_opt API::Global::Threading::Flag flags = API::Global::Threading::Flag::None);
+				CLOAKENGINE_API CE::RefPointer<IMultithreadedWriteBuffer> CLOAK_CALL CreateMultithreadedWriteBuffer(In const CE::RefPointer<IWriteBuffer>& dst, In API::Global::Threading::Flag flags);
 			}
 		}
 	}

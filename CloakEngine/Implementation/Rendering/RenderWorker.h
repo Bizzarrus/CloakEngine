@@ -10,7 +10,8 @@ namespace CloakEngine {
 		namespace Rendering {
 			inline namespace RenderWorker_v1 {
 				CLOAK_INTERFACE_ID("{88A4C5D8-0730-4B70-AFD2-2F313E52E4D3}") IRenderWorker : public virtual API::Rendering::RenderPass_v1::IRenderWorker {
-
+					public:
+						virtual void CLOAK_CALL_THIS SetCamera(In size_t id) = 0;
 				};
 			}
 		}

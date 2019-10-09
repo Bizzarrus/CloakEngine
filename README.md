@@ -11,8 +11,6 @@ In addition to that, the engine requires the current Windows 10 API (Version 10.
 # Projects and current state
 ## CloakCompiler
 This project handles offline-computation and compression of file types (images, meshes, shader, translation files, fonts). 
-## CloakEditor
-The CloakEditor is planed to be the GUI for developing with the engine. Due to the current state of the engine itself, this project is currently not in development and my not work at all.
 ## CloakEngine
 The main engine. Currently supported features include:
 - DirectX 12 based rendering engine

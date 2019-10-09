@@ -69,21 +69,16 @@ namespace CloakEngine {
 						return r;
 					}
 					//Rounds up to next power of two
-					template<typename T, typename std::enable_if<std::is_integral<T>::value && std::is_unsigned<T>::value>::type* = nullptr> constexpr T CLOAK_CALL CeilPower2(In T x)
+					template<typename T, typename std::enable_if<std::is_integral<T>::value&& std::is_unsigned<T>::value>::type* = nullptr> constexpr T CLOAK_CALL CeilPower2(In T x)
 					{
 						if (x == 0) { return 0; }
-						x--;
+						x -= 1;
 						x |= x >> 1;
 						x |= x >> 2;
 						x |= x >> 4;
-						if constexpr (sizeof(T) <= 1) { goto result; }
-						x |= x >> 8;
-						if constexpr (sizeof(T) <= 2) { goto result; }
-						x |= x >> 16;
-						if constexpr (sizeof(T) <= 4) { goto result; }
-						x |= x >> 32;
-
-					result:
+						if constexpr (sizeof(T) > 1) { x |= x >> 8; }
+						if constexpr (sizeof(T) > 2) { x |= x >> 16; }
+						if constexpr (sizeof(T) > 4) { x |= x >> 32; }
 						return x + 1;
 					}
 					//Rotates all bits of the given value 'shift' bits towards the left (most significant) bit, warping bits around

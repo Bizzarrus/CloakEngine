@@ -816,13 +816,11 @@ namespace CloakEngine {
 				}
 				void CLOAK_CALL printFPS()
 				{
-					size_t tn = 0;
-					float fps = 0;
-					unsigned int tID = 0;
-					while (Impl::Global::Game::getFPS(tn, &fps, &tID))
+					API::Global::FPSInfo fps;
+					API::Global::Game::GetFPS(&fps);
+					for (size_t a = 0; a < fps.Count; a++)
 					{
-						API::Global::Log::WriteToLog("#" + std::to_string(tID) + ": " + std::to_string(fps), API::Global::Log::Type::Console);
-						tn++;
+						API::Global::Log::WriteToLog("#" + std::to_string(a) + ": " + std::to_string(fps.Thread[a].FPS), API::Global::Log::Type::Console);
 					}
 				}
 

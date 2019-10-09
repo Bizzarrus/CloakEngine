@@ -47,6 +47,7 @@
 
 #include "Engine/Launcher.h"
 #include "Engine/Thread.h"
+#include "Engine/GameCoreLoop.h"
 #include "Engine/WindowHandler.h"
 #include "Engine/Graphic/Core.h"
 #include "Engine/Graphic/GraphicLock.h"
@@ -86,7 +87,7 @@ namespace CloakEngine {
 					unsigned long long lastUpdate = 0;
 				};
 				struct AsyncEngineInfo {
-					const API::Global::IGameEventFactory* Factory;
+					API::Global::IGameEventFactory* Factory;
 					API::Global::GameInfo Info;
 				};
 				struct TimeInfo {
@@ -97,12 +98,8 @@ namespace CloakEngine {
 
 				API::Helper::ISyncSection* g_syncPtrs = nullptr;
 				API::Helper::ISyncSection* g_syncModulPath = nullptr;
-				API::Helper::ISyncSection* g_syncThreads = nullptr;
 #ifdef _DEBUG
 				API::Helper::ISyncSection* g_syncResponde = nullptr;
-#endif
-				API::Global::IGameEvent* g_gameEvent = nullptr;
-#ifdef _DEBUG
 				Engine::LinkedList<API::Helper::ISavePtr*>* g_ptrs;
 #endif
 				std::atomic<bool> g_run = true;
@@ -122,7 +119,7 @@ namespace CloakEngine {
 				std::atomic<Impl::Global::DebugLayer*> g_dbgLayer = nullptr;
 				std::atomic<TimeInfo> g_pauseTime;
 				std::atomic<TimeInfo> g_runTime;
-				std::atomic<BYTE> g_currentComLevel = CLOAKENGINE_CAN_COM_MAX_LEVEL;
+				std::atomic<uint8_t> g_currentComLevel = Impl::Global::Game::ThreadComState::MAX_LEVEL;
 				
 				size_t g_threadCount = 0;
 				Engine::Thread::Thread* g_threads[API::Global::THREAD_COUNT - 1];
@@ -132,46 +129,6 @@ namespace CloakEngine {
 				std::string* g_modulPath;
 				bool g_hasModulPath = false;
 				HANDLE g_onStopEvent = nullptr;
-
-				float CLOAK_CALL threadFPS(In API::Global::Time curTime, Inout ThreadFPSInfo* info)
-				{
-					float res = info->lastFPS;
-					if (curTime > info->lastTime) 
-					{ 
-						const API::Global::Time etime = curTime - info->lastTime;
-						info->turns++;
-						if (etime >= 500000)
-						{
-							const API::Global::Time pet = curTime - info->prevTime;
-							res = ((info->turns + info->lastTurns)*1000000.0f) / pet;
-							info->prevTime = info->lastTime;
-							info->lastTurns = info->turns;
-							info->lastTime = curTime;
-							info->turns = 0;
-							info->lastFPS = res;
-						}
-					}
-					return res;
-				}
-				DWORD CLOAK_CALL threadSleep(In API::Global::Time curTime, In float timeToSleep, Inout ThreadSleepInfo* info)
-				{
-					const API::Global::Time t = getCurrentTimeMicroSeconds();
-					if (t < timeToSleep + curTime)
-					{
-						float st = timeToSleep + info->roundOffset + (info->exptTime == 0 ? curTime : info->exptTime) - t;
-						st = max(0, st);
-						const API::Global::Time tts = static_cast<API::Global::Time>(std::floor(st));
-						info->roundOffset = st - tts;
-						info->exptTime = t + tts;
-						return static_cast<DWORD>(tts / 1000);
-					}
-					else
-					{
-						info->roundOffset = 0;
-						info->exptTime = t;
-						return 0;
-					}
-				}
 #ifdef _DEBUG
 				void CLOAK_CALL removePtr(In ptrAdr ptr)
 				{
@@ -196,7 +153,7 @@ namespace CloakEngine {
 #endif
 				void CLOAK_CALL registerThread() 
 				{ 
-					g_canComCount += CLOAKENGINE_CAN_COM_MAX_LEVEL - 1;
+					g_canComCount += Impl::Global::Game::ThreadComState::MAX_LEVEL - 1;
 					g_threadStopCount++; 
 				}
 				void CLOAK_CALL registerThreadStop() 
@@ -304,43 +261,83 @@ namespace CloakEngine {
 					else { g_threadPaused--; }
 				}
 				bool CLOAK_CALL checkThreadWaiting() { return g_threadPaused > 0; }
-				ThreadCanComRes CLOAK_CALL checkThreadCommunicateLevel(Inout ThreadCanComInfo* info)
+				float CLOAK_CALL_THIS ThreadFPSState::Update() { return Update(Impl::Global::Game::getCurrentTimeMicroSeconds()); }
+				float CLOAK_CALL_THIS ThreadFPSState::Update(In API::Global::Time currentTime)
 				{
-					if (info != nullptr)
+					float res = m_lastFPS;
+					if (currentTime > m_last)
 					{
-						if (info->curCanCom == 0) { return ThreadCanComRes::FINISHED; }
-						if (g_canComCheck == false)
+						const API::Global::Time etime = currentTime - m_last;
+						m_turns++;
+						if (etime >= 500000)
 						{
-							info->reduce = false;
-							info->curCanCom = CLOAKENGINE_CAN_COM_MAX_LEVEL;
-						}
-						else
-						{
-							API::Helper::Lock lock(g_syncThreads);
-							const size_t tc = 1 + g_threadCount;
-							lock.unlock();
-							const BYTE ncc = static_cast<BYTE>(ceil(static_cast<double>(g_canComCount) / tc));
-							const BYTE res = static_cast<BYTE>(min(CLOAKENGINE_CAN_COM_MAX_LEVEL, max(ncc, 0)));
-							if (res != info->curCanCom)
-							{
-								g_currentComLevel = res;
-								info->curCanCom = res;
-								info->reduce = true;
-								return ThreadCanComRes::UPDATED;
-							}
+							const API::Global::Time pet = currentTime - m_prev;
+							res = ((m_turns + m_lastTurns) * 1000000.0f) / pet;
+							m_prev = m_last;
+							m_lastTurns = m_turns;
+							m_last = currentTime;
+							m_turns = 0;
+							m_lastFPS = res;
 						}
 					}
-					return ThreadCanComRes::NOT_READY;
+					return res;
 				}
-				void CLOAK_CALL updateCommunicateLevel(Inout ThreadCanComInfo* info)
+				API::Global::Time CLOAK_CALL_THIS ThreadSleepState::GetSleepTime(In float targetFrameTime) 
 				{
-					if (info != nullptr && info->reduce)
+					const API::Global::Time cur = getCurrentTimeMicroSeconds();
+					return GetSleepTime(cur, cur, targetFrameTime);
+				}
+				API::Global::Time CLOAK_CALL_THIS ThreadSleepState::GetSleepTime(In API::Global::Time frameStart, In float targetFrameTime) 
+				{
+					const API::Global::Time cur = getCurrentTimeMicroSeconds();
+					return GetSleepTime(frameStart, cur, targetFrameTime);
+				}
+				API::Global::Time CLOAK_CALL_THIS ThreadSleepState::GetSleepTime(In API::Global::Time frameStart, In API::Global::Time currentTime, In float targetFrameTime) 
+				{
+					if (static_cast<long double>(currentTime) < static_cast<long double>(frameStart) + targetFrameTime)
 					{
-						info->reduce = false;
+						long double st = targetFrameTime + m_round - static_cast<long double>(currentTime - (m_expectedAwake == 0 ? frameStart : m_expectedAwake));
+						st = max(0, st);
+						const API::Global::Time tts = static_cast<API::Global::Time>(std::floor(st));
+						m_round = st - tts;
+						m_expectedAwake = currentTime + tts;
+						return tts;
+					}
+					m_round = 0;
+					m_expectedAwake = currentTime;
+					return 0;
+				}
+				ThreadComState::State CLOAK_CALL_THIS ThreadComState::Check()
+				{
+					if (m_level == 0) { return FINISHED; }
+					if (g_canComCheck == false)
+					{
+						m_reduce = false;
+						m_level = MAX_LEVEL;
+					}
+					else
+					{
+						const size_t tc = 2 + g_threadCount; //the +2 is for #1 current thread and #2 game core loop
+						const uint8_t ncc = static_cast<uint8_t>((g_canComCount + tc - 1) / tc);
+						if (ncc < m_level)
+						{
+							g_currentComLevel = ncc;
+							m_level = ncc;
+							m_reduce = true;
+							return UPDATED;	
+						}
+					}
+					return WAITING;
+				}
+				void CLOAK_CALL_THIS ThreadComState::Update()
+				{
+					if (m_reduce == true)
+					{
+						m_reduce = false;
 						g_canComCount--;
 					}
 				}
-				BYTE CLOAK_CALL getThreadCommunicateLevel(In const ThreadCanComInfo& info) { return info.curCanCom; }
+				uint8_t CLOAK_CALL_THIS ThreadComState::GetCurrentLevel() const { return m_level; }
 				unsigned long long CLOAK_CALL getCurrentTimeMilliSeconds()
 				{
 					if (g_freqInit == true)
@@ -372,7 +369,6 @@ namespace CloakEngine {
 				Ret_notnull Engine::Thread::Thread* CLOAK_CALL createThread(In const Engine::Thread::ThreadDesc& desc)
 				{
 #endif
-					API::Helper::Lock lock(g_syncThreads);
 					CLOAK_ASSUME(g_threadCount + 1 < API::Global::THREAD_COUNT);
 #ifdef _DEBUG
 					Engine::Thread::Thread* p = new Engine::Thread::CustomThread(desc, static_cast<unsigned int>(g_threadCount), label);
@@ -409,37 +405,7 @@ namespace CloakEngine {
 					}
 					return *g_modulPath;
 				}
-				Success(return == true)
-				bool CLOAK_CALL getFPS(In size_t threadNum, Out_opt float* fps, Out_opt unsigned int* tID)
-				{
-					API::Helper::Lock lock(g_syncThreads);
-					if (threadNum == g_threadCount)
-					{
-						if (tID != nullptr) { *tID = (unsigned int)threadNum; }
-						if (fps != nullptr) { *fps = g_fps; }
-						return true;
-					}
-					else if (threadNum < g_threadCount)
-					{
-						Engine::Thread::Thread* p = g_threads[threadNum];
-						if (p != nullptr)
-						{
-							if (tID != nullptr) { *tID = p->GetID(); }
-							if (fps != nullptr) { *fps = p->GetFPS(); }
-							return true;
-						}
-					}
-					if (tID != nullptr) { *tID = 0; }
-					if (fps != nullptr) { *fps = 0; }
-					return false;
-				}
-
-				inline void CLOAK_CALL onGameInit(In size_t threadID) { g_gameEvent->OnInit(); }
-				inline void CLOAK_CALL onGameStart(In size_t threadID) { g_gameEvent->OnStart(); }
-				inline void CLOAK_CALL onGameUpdate(In size_t threadID, In API::Global::Time etime) { g_gameEvent->OnUpdate(etime); }
-				inline void CLOAK_CALL onGameStop(In size_t threadID) { g_gameEvent->OnStop(); }
-				void CLOAK_CALL onGameLangUpdate() { g_gameEvent->OnUpdateLanguage(); }
-				BYTE CLOAK_CALL GetCurrentComLevel() { return g_currentComLevel; }
+				uint8_t CLOAK_CALL GetCurrentComLevel() { return g_currentComLevel; }
 
 				DWORD WINAPI runEngineAsync(LPVOID p)
 				{
@@ -454,9 +420,10 @@ namespace CloakEngine {
 	namespace API {
 		namespace Global {
 			namespace Game {
-				const uint32_t CLOAKENGINE_API VERSION = CLOAKENGINE_VERSION;
+				constexpr uint32_t VERSION = CLOAKENGINE_VERSION;
 
-				CLOAKENGINE_API void CLOAK_CALL StartEngine(In const IGameEventFactory* factory, In const GameInfo& info)
+				CLOAKENGINE_API bool CLOAK_CALL CheckVersion(In_opt uint32_t version) { return VERSION == version; }
+				CLOAKENGINE_API void CLOAK_CALL StartEngine(In IGameEventFactory* factory, In const GameInfo& info)
 				{
 					if (factory == nullptr) { return; }
 #ifdef _DEBUG
@@ -480,8 +447,6 @@ namespace CloakEngine {
 					if (info.debugMode) { dbg = factory->CreateDebug(); }
 
 					Impl::Global::DebugLayer* dbgLayer = nullptr;
-
-					factory->Delete();
 #ifdef _DEBUG
 					Impl::Global::Game::g_ptrs = new Engine::LinkedList<API::Helper::ISavePtr*>();
 #endif
@@ -489,7 +454,6 @@ namespace CloakEngine {
 					{
 						Impl::Global::Game::g_onStopEvent = CreateEvent(nullptr, TRUE, FALSE, nullptr);
 
-						Impl::Global::Game::g_gameEvent = game;
 						Impl::Global::Input::SetInputHandler(input);
 						Impl::Global::Lobby::SetLobbyEventHandler(lobby);
 						Impl::Global::Debug::setDebugEvent(dbg);
@@ -514,7 +478,6 @@ namespace CloakEngine {
 						Impl::Helper::Lock::Initiate();
 						CREATE_INTERFACE(CE_QUERY_ARGS(&Impl::Global::Game::g_syncPtrs));
 						CREATE_INTERFACE(CE_QUERY_ARGS(&Impl::Global::Game::g_syncModulPath));
-						CREATE_INTERFACE(CE_QUERY_ARGS(&Impl::Global::Game::g_syncThreads));
 #ifdef _DEBUG
 						CREATE_INTERFACE(CE_QUERY_ARGS(&Impl::Global::Game::g_syncResponde));
 						Impl::Global::Game::g_threadRespond = new Engine::FlipVector<Impl::Global::Game::ThreadInfo>();
@@ -526,6 +489,8 @@ namespace CloakEngine {
 						}
 						Impl::Global::Task::IRunWorker* taskWorker = Impl::Global::Task::Initialize(info.useWindow);
 						Impl::World::ComponentManager::Initialize();
+						Impl::World::ComponentManager_v2::ComponentAllocator::Initialize();
+						Impl::World::Entity_v2::Initialize();
 						Impl::Files::Buffer_v1::Initialize();
 						Impl::Files::FileIO_v1::Initialize();
 						Impl::Files::Compressor_v2::Initialize();
@@ -534,7 +499,7 @@ namespace CloakEngine {
 						Engine::WorldStreamer::Initialize();
 						Engine::Audio::Core::Start();
 						Impl::Files::Image::Initialize();
-						Impl::Global::Game::ThreadSleepInfo tsi;
+						Impl::Global::Game::ThreadSleepState tsi;
 
 						if (Engine::Launcher::StartLauncher(launcher, &tsi) && Impl::Global::Game::g_run == true)
 						{
@@ -551,17 +516,6 @@ namespace CloakEngine {
 								threadDesc.FPSFactor = 1;
 								threadDesc.Flags = Engine::Thread::FLAG_LOCK_FPS | Engine::Thread::FLAG_IGNORE_PAUSE | Engine::Thread::FLAG_NO_RESPONSE_CHECK | Engine::Thread::FLAG_IMPORTANT;
 								CREATE_THREAD(threadDesc, "Log");
-							}
-							//Game
-							{
-								Engine::Thread::ThreadDesc threadDesc;
-								threadDesc.Functions.Start[4] = Impl::Global::Game::onGameStart;
-								threadDesc.Functions.Update = Impl::Global::Game::onGameUpdate;
-								threadDesc.Functions.Stop[0] = Impl::Global::Game::onGameStop;
-								threadDesc.TargetFPS = Impl::Global::Game::DEFAULT_FPS;
-								threadDesc.FPSFactor = 1;
-								threadDesc.Flags = Engine::Thread::FLAG_PAUSE_ON_LOADING;
-								CREATE_THREAD(threadDesc, "Game");
 							}
 							if (useConsole)
 							{
@@ -610,13 +564,12 @@ namespace CloakEngine {
 								threadDesc.Flags = Engine::Thread::FLAG_PAUSE_ON_LOADING;
 								CREATE_THREAD(threadDesc, "Physics");
 							}
+							Engine::Game::Initialize(info.useWindow, Impl::Global::Game::DEFAULT_FPS, game);
 							//TODO: AAA Initialize and start all required threads
 #ifdef _DEBUG
 							{
 								API::Helper::Lock rlock(Impl::Global::Game::g_syncResponde);
-								API::Helper::Lock tlock(Impl::Global::Game::g_syncThreads);
 								Impl::Global::Game::g_threadRespond->resize(Impl::Global::Game::g_threadCount);
-								tlock.unlock();
 								Impl::Global::Game::ThreadInfo defInfo;
 								defInfo.lastUpdate = Impl::Global::Game::getCurrentTimeMilliSeconds();
 								defInfo.checkUpdate = true;
@@ -630,9 +583,10 @@ namespace CloakEngine {
 							Impl::Global::Mouse::Initiate();
 							Impl::Global::Audio::Initialize();
 							Impl::Global::Input::OnInitialize();
-							Impl::Global::Game::ThreadCanComInfo canCom;
+							Engine::FileLoader::onStart();
+							Impl::Global::Game::ThreadComState canCom;
 							unsigned long long lastUpdate = 0;
-							Impl::Global::Game::ThreadFPSInfo tfi;
+							Impl::Global::Game::ThreadFPSState tfi;
 							Log::WriteToLog("START GAME", Log::Type::Info);
 #ifdef _DEBUG
 							bool canCheck = false;
@@ -642,24 +596,22 @@ namespace CloakEngine {
 							{
 								const unsigned long long ctm = Impl::Global::Game::getCurrentTimeMicroSeconds();
 								const unsigned long long ct = ctm / 1000;
-								const Impl::Global::Game::ThreadCanComRes canComRes = Impl::Global::Game::checkThreadCommunicateLevel(&canCom);
-								if (canComRes == Impl::Global::Game::ThreadCanComRes::UPDATED)
+								const Impl::Global::Game::ThreadComState::State ccs = canCom.Check();
+								if (ccs == Impl::Global::Game::ThreadComState::UPDATED)
 								{
-									BYTE nCC = Impl::Global::Game::getThreadCommunicateLevel(canCom);
-									const BYTE startCount = (CLOAKENGINE_CAN_COM_MAX_LEVEL - 1) - nCC;
+									const uint8_t nCC = canCom.GetCurrentLevel();
+									const BYTE startCount = (Impl::Global::Game::ThreadComState::MAX_LEVEL - 1) - nCC;
 									if (startCount == 0)
 									{
 #ifdef _DEBUG
 										canCheck = true;
 #endif
-										if (info.useWindow) { Engine::WindowHandler::onInit(); }
 										Engine::Graphic::Core::InitPipeline();
-										Engine::FileLoader::onStart();
+										if (info.useWindow) { Engine::WindowHandler::onInit(); }
 									}
 									else if (startCount == 1)
 									{
 										Impl::Global::Steam::Initialize(info.useSteam);
-										Impl::Global::Game::onGameInit(0);
 										Engine::Graphic::Core::Load();
 									}
 									else if (startCount == 2)
@@ -671,31 +623,33 @@ namespace CloakEngine {
 									{
 										if (info.useWindow) { Engine::Graphic::Core::Start(); }
 									}
-									Impl::Global::Game::updateCommunicateLevel(&canCom);
+									canCom.Update();
 								}
-								else if (canComRes == Impl::Global::Game::ThreadCanComRes::FINISHED)
+								else if (ccs == Impl::Global::Game::ThreadComState::FINISHED)
 								{
-									Impl::Global::Game::g_fps = Impl::Global::Game::threadFPS(ctm, &tfi);
+									Impl::Global::Game::g_fps = tfi.Update(ctm);
 									lastUpdate = ctm;
-									Sleep(Impl::Global::Game::threadSleep(ctm, Impl::Global::Game::g_sleepTime, &tsi));
+									Sleep(static_cast<DWORD>(tsi.GetSleepTime(ctm, Impl::Global::Game::g_sleepTime) / 1000));
 									goto game_running;
 								}
 #ifdef _DEBUG
 								if (canCheck) { Impl::Global::Game::checkResponse(ct); }
 #endif
-								Impl::Global::Game::g_fps = Impl::Global::Game::threadFPS(ctm, &tfi);
+								Impl::Global::Game::g_fps = tfi.Update(ctm);
 								lastUpdate = ctm;
-								Sleep(Impl::Global::Game::threadSleep(ctm, Impl::Global::Game::g_sleepTime, &tsi));
+								Sleep(static_cast<DWORD>(tsi.GetSleepTime(ctm, Impl::Global::Game::g_sleepTime) / 1000));
 							}
 							goto game_shutdown;
 
 						game_running:
+							Engine::FileLoader::onStartLoading();
 							if (info.useWindow) { Engine::WindowHandler::showWindow(); }
+							//Core loop:
 							while (Impl::Global::Game::g_run == true)
 							{
 								const unsigned long long ctm = Impl::Global::Game::getCurrentTimeMicroSeconds();
 								const unsigned long long ct = ctm / 1000;
-								const unsigned long long etime = static_cast<unsigned long long>((lastUpdate < ctm ? ctm - lastUpdate : 0) / 1000.0f);
+								const unsigned long long etime = (lastUpdate < ctm ? ctm - lastUpdate : 0) / 1000;
 
 #ifdef _DEBUG
 								Impl::Global::Game::checkResponse(ct);
@@ -705,16 +659,17 @@ namespace CloakEngine {
 								{ 
 									Engine::Graphic::Core::Update(etime);
 
-									Impl::Global::Game::g_fps = Impl::Global::Game::threadFPS(ctm, &tfi);
+									Impl::Global::Game::g_fps = tfi.Update(ctm);
 									lastUpdate = ctm;
-									const DWORD sleepTime = Impl::Global::Game::threadSleep(ctm, Impl::Global::Game::g_sleepTime, &tsi);
+									const CE::Global::Time sleepTime = tsi.GetSleepTime(ctm, Impl::Global::Game::g_sleepTime);
 									if (sleepTime > 0)
 									{
-										unsigned long long curTime = Impl::Global::Game::getCurrentTimeMicroSeconds();
+										CE::Global::Time curTime = Impl::Global::Game::getCurrentTimeMicroSeconds();
+										const CE::Global::Time targetTime = curTime + sleepTime;
 										do {
-											if (Engine::WindowHandler::UpdateOnce() == false && Engine::WindowHandler::WaitForMessage((tsi.exptTime - curTime) / 1000) == true) { break; }
+											if (Engine::WindowHandler::UpdateOnce() == false && Engine::WindowHandler::WaitForMessage((targetTime - curTime) / 1000) == true) { break; }
 											curTime = Impl::Global::Game::getCurrentTimeMicroSeconds();
-										} while (curTime < tsi.exptTime);
+										} while (curTime < targetTime);
 									}
 								}
 								else
@@ -729,6 +684,7 @@ namespace CloakEngine {
 							Engine::WindowHandler::onStop();
 							//Stopping threads
 							Impl::Global::Game::registerThreadStop();
+							Engine::Game::SignalStop();
 							const size_t tc = Impl::Global::Game::g_threadCount;
 							for (size_t a = 0; a < tc; a++) { Impl::Global::Game::g_threads[a]->Awake(); }
 
@@ -736,13 +692,12 @@ namespace CloakEngine {
 							{
 								const unsigned long long ctm = Impl::Global::Game::getCurrentTimeMicroSeconds();
 								const unsigned long long ct = ctm / 1000;
-								API::Helper::Lock thlock(Impl::Global::Game::g_syncThreads);
 								for (size_t a = 0; a < Impl::Global::Game::g_threadCount; a++)
 								{
 									Engine::Thread::Thread* p = Impl::Global::Game::g_threads[a];
 									if (p != nullptr && p->IsRunning()) { p->Stop(); }
 								}
-								Sleep(Impl::Global::Game::threadSleep(ctm, Impl::Global::Game::DEFAULT_SLEEP_TIME, &tsi));
+								Sleep(static_cast<DWORD>(tsi.GetSleepTime(ctm, Impl::Global::Game::DEFAULT_SLEEP_TIME) / 1000));
 							}
 						}
 						else { Stop(); }//Launcher abort
@@ -751,24 +706,26 @@ namespace CloakEngine {
 #endif
 					}
 
-					//Release stuff that requires some tasks to finish:
+					//Release stuff that may trigger some external tasks
+					Engine::WorldStreamer::Release();
+
+					//Release stuff that requires (and waits for) some tasks to finish:
+					Impl::World::ComponentManager_v2::ComponentAllocator::Shutdown();
 					Engine::Audio::Core::Release();
+					Engine::FileLoader::waitOnLoading();
 
 					//Stop all task execution:
 					Impl::Global::Task::Release();
 
 					//Delete threads
-					API::Helper::Lock thlock(Impl::Global::Game::g_syncThreads);
 					for (size_t a = 0; a < Impl::Global::Game::g_threadCount; a++)
 					{
 						Engine::Thread::Thread* p = Impl::Global::Game::g_threads[a];
 						delete p;
 					}
-					thlock.unlock();
 
 					//Release other stuff:
 					Impl::Files::Image::Shutdown();
-					Engine::WorldStreamer::Release();
 					Impl::Global::Video::Release();
 					Impl::Global::Mouse::Release();
 					Impl::Global::Localization::Release();
@@ -776,12 +733,13 @@ namespace CloakEngine {
 					Impl::Interface::Release();
 					Impl::Global::Steam::Release();
 					Impl::Global::Input::OnRelease();
-					//TODO: stop other stuff (?)
 
 					Impl::Global::Audio::Release();
 					Engine::Audio::Core::FinalRelease();
 					Engine::Graphic::Core::FinalRelease();
 					Impl::World::ComponentManager::ReleaseSyncs();
+					Impl::World::ComponentManager_v2::ComponentAllocator::ReleaseSyncs();
+					Impl::World::Entity_v2::ReleaseSyncs();
 					Impl::Files::FileIO_v1::CloseAllFiles();
 
 					//Delete task-system threads
@@ -795,11 +753,8 @@ namespace CloakEngine {
 					Impl::Files::Compressor_v2::Release();
 					Impl::Files::TerminateFileHandler();
 
-					Impl::Global::Game::g_gameEvent = nullptr;
-
 					SAVE_RELEASE(Impl::Global::Game::g_syncPtrs);
 					SAVE_RELEASE(Impl::Global::Game::g_syncModulPath);
-					SAVE_RELEASE(Impl::Global::Game::g_syncThreads);
 #ifdef _DEBUG
 					SAVE_RELEASE(Impl::Global::Game::g_syncResponde);
 #endif
@@ -840,6 +795,8 @@ namespace CloakEngine {
 					Impl::OS::Terminate();
 					//Release managed memory elements
 					Impl::World::ComponentManager::Release();
+					Impl::World::ComponentManager_v2::ComponentAllocator::Terminate();
+					Impl::World::Entity_v2::Terminate();
 					Impl::Global::Debug::Release();
 					Impl::Global::Log::Release();
 					if (Impl::Global::Game::g_hasModulPath) { delete Impl::Global::Game::g_modulPath; }
@@ -855,19 +812,19 @@ namespace CloakEngine {
 
 					SetEvent(Impl::Global::Game::g_onStopEvent);
 				}
-				CLOAKENGINE_API void CLOAK_CALL StartEngineAsync(In const IGameEventFactory* factory, In const GameInfo& info)
+				CLOAKENGINE_API void CLOAK_CALL StartEngineAsync(In IGameEventFactory* factory, In const GameInfo& info)
 				{
 					Impl::Global::Game::AsyncEngineInfo* ai = new Impl::Global::Game::AsyncEngineInfo();
 					ai->Factory = factory;
 					ai->Info = info;
 					CreateThread(nullptr, 0, Impl::Global::Game::runEngineAsync, ai, 0, nullptr);
 				}
-				CLOAKENGINE_API void CLOAK_CALL StartEngine(In const IGameEventFactory* factory, In const GameInfo& info, In HWND window)
+				CLOAKENGINE_API void CLOAK_CALL StartEngine(In IGameEventFactory* factory, In const GameInfo& info, In HWND window)
 				{
 					Engine::WindowHandler::setExternWindow(window);
 					return StartEngine(factory, info);
 				}
-				CLOAKENGINE_API void CLOAK_CALL StartEngineAsync(In const IGameEventFactory* factory, In const GameInfo& info, In HWND window)
+				CLOAKENGINE_API void CLOAK_CALL StartEngineAsync(In IGameEventFactory* factory, In const GameInfo& info, In HWND window)
 				{
 					Engine::WindowHandler::setExternWindow(window);
 					return StartEngineAsync(factory, info);
@@ -890,8 +847,8 @@ namespace CloakEngine {
 				{
 					if (CloakDebugCheckOK(fps >= 0.0f, API::Global::Debug::Error::ILLEGAL_ARGUMENT, false))
 					{
-						API::Helper::Lock lock(Impl::Global::Game::g_syncThreads);
 						Impl::Global::Game::g_sleepTime = fps <= 0 ? 0 : (1000000 / fps);
+						Engine::Game::SetFPS(fps);
 						for (size_t a = 0; a < Impl::Global::Game::g_threadCount; a++)
 						{
 							Engine::Thread::Thread* p = Impl::Global::Game::g_threads[a];
@@ -899,19 +856,22 @@ namespace CloakEngine {
 						}
 					}
 				}
-				CLOAKENGINE_API void CLOAK_CALL GetFPS(Out FPSInfo* info)
+				CLOAKENGINE_API float CLOAK_CALL GetFPS(Out_opt FPSInfo* info)
 				{
-					if (CloakDebugCheckOK(info != nullptr, API::Global::Debug::Error::ILLEGAL_ARGUMENT, false))
+					float r = Engine::Game::GetFPS();
+					if (info != nullptr)
 					{
-						float fps = 0;
-						unsigned int tID = 0;
-						for (size_t a = 0; a < API::Global::THREAD_COUNT && Impl::Global::Game::getFPS(a, &fps, &tID); a++) 
-						{ 
-							info->Thread[a].FPS = fps;
-							info->Thread[a].ID = tID;
-							info->Used = static_cast<uint32_t>(a + 1);
+						ZeroMemory(info, sizeof(FPSInfo));
+						info->Thread[0].FPS = r;
+						info->Thread[1].FPS = Impl::Global::Game::g_fps;
+						for (size_t a = 0; a < Impl::Global::Game::g_threadCount; a++)
+						{
+							CLOAK_ASSUME(a + 2 < ARRAYSIZE(info->Thread));
+							info->Thread[a + 2].FPS = Impl::Global::Game::g_threads[a]->GetFPS();
 						}
+						info->Count = Impl::Global::Game::g_threadCount + 2;
 					}
+					return r;
 				}
 				CLOAKENGINE_API bool CLOAK_CALL IsRunning() { return Impl::Global::Game::g_running; }
 

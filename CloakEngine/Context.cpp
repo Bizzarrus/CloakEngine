@@ -153,7 +153,7 @@ namespace CloakEngine {
 						uint32_t bits = sizeof(void*) << 3;
 						for (uint32_t a = 0; a < bits; a += 4)
 						{
-							memset(counting, 0, sizeof(uint32_t) << 4);
+							memset(counting, 0, sizeof(uint32_t) * ARRAYSIZE(counting));
 							for (size_t b = 0; b < size; b++) { counting[(reinterpret_cast<uintptr_t>(m_vertexBuffer[sorted[0][b]].Buffer.Get()) >> a) & 0xF]++; }
 							for (size_t b = 1; b < ARRAYSIZE(counting); b++) { counting[b] += counting[b - 1]; }
 							for (size_t b = size; b > 0; b--)

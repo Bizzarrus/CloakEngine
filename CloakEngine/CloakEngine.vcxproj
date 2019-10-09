@@ -520,10 +520,12 @@
     <ClInclude Include="Engine\FileLoader.h" />
     <ClInclude Include="Engine\FillVector.h" />
     <ClInclude Include="Engine\FlipVector.h" />
+    <ClInclude Include="Engine\GameCoreLoop.h" />
     <ClInclude Include="Engine\Graphic\Core.h" />
     <ClInclude Include="Engine\Graphic\DefaultRenderPass.h" />
     <ClInclude Include="Engine\Graphic\DefaultShaderLib.h" />
     <ClInclude Include="Engine\Graphic\GraphicLock.h" />
+    <ClInclude Include="Engine\Graphic\Worker.h" />
     <ClInclude Include="Engine\Hash.h" />
     <ClInclude Include="Engine\Input\Gamepad.h" />
     <ClInclude Include="Engine\Input\Keyboard.h" />
@@ -657,7 +659,9 @@
     <ClCompile Include="DX12Sampler.cpp" />
     <ClCompile Include="Entity.cpp" />
     <ClCompile Include="FileIOBuffer.cpp" />
+    <ClCompile Include="GameCoreLoop.cpp" />
     <ClCompile Include="Gamepad.cpp" />
+    <ClCompile Include="GraphicWorker.cpp" />
     <ClCompile Include="HTTPBuffer.cpp" />
     <ClCompile Include="Keyboard.cpp" />
     <ClCompile Include="LightComponent.cpp" />

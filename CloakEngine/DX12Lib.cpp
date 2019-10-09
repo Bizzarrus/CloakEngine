@@ -63,9 +63,9 @@ namespace CloakEngine {
 						return g_couldLoad;
 					}
 
-					IManager* CLOAK_CALL CreateManager()
+					CE::RefPointer<IManager> CLOAK_CALL CreateManager()
 					{
-						if (load()) { return new DX12::Manager(); }
+						if (load()) { return CE::RefPointer<IManager>::Construct<DX12::Manager>(); }
 						return nullptr;
 					}
 				}
@@ -82,7 +82,7 @@ namespace CloakEngine {
 		namespace Rendering {
 			namespace DX12 {
 				namespace Lib {
-					IManager* CLOAK_CALL CreateManager() { return nullptr; }
+					CE::RefPointer<IManager> CLOAK_CALL CreateManager() { return nullptr; }
 				}
 			}
 		}

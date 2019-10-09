@@ -24,7 +24,7 @@ namespace CloakEngine {
 		namespace Rendering {
 			namespace DX12 {
 				namespace Lib {
-					IManager* CLOAK_CALL CreateManager();
+					CE::RefPointer<IManager> CLOAK_CALL CreateManager();
 
 #ifndef NO_LIB_LOAD
 					EXTERN_DX12 PFN_D3D12_CREATE_DEVICE D3D12CreateDevice;

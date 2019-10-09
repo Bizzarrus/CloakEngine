@@ -114,7 +114,7 @@ class Game : public CloakEngine::Global::IGameEvent {
 	public:
 		Game() {}
 		~Game() {}
-		virtual void CLOAK_CALL_THIS Delete() override { delete this; }
+		virtual void CLOAK_CALL_THIS Delete() override { }
 		virtual void CLOAK_CALL_THIS OnInit() override
 		{
 			g_paths = new PathCollection();
@@ -628,7 +628,7 @@ class Game : public CloakEngine::Global::IGameEvent {
 			SAVE_RELEASE(g_fpsString);
 			delete g_paths;
 		}
-		virtual void CLOAK_CALL_THIS OnUpdate(unsigned long long elapsedTime) override
+		virtual void CLOAK_CALL_THIS OnUpdate(In CE::Global::Time elapsedTime, In CE::Global::Time scaledGameTime, In bool inLoadingScreen) override
 		{
 #ifndef NO_INTERFACE
 			if (g_fpsText->IsVisible())
@@ -636,14 +636,14 @@ class Game : public CloakEngine::Global::IGameEvent {
 				CloakEngine::Global::FPSInfo fpsi;
 				CloakEngine::Global::Game::GetFPS(&fpsi);
 				std::stringstream fps;
-				for (size_t a = 0; a < fpsi.Used; a++)
+				for (size_t a = 0; a < fpsi.Count; a++)
 				{
 					float f = fpsi.Thread[a].FPS;
 					unsigned int fl = static_cast<unsigned int>(floorf(f));
 					unsigned int fm = static_cast<unsigned int>(floorf(10 * (f - floorf(f))));
 					fps << ": " << fl << "." << fm << " ";
 					g_fpsString->Set((a << 2) + 0, 0, CloakEngine::Helper::Color::Green);
-					g_fpsString->Set((a << 2) + 1, fpsi.Thread[a].ID);
+					g_fpsString->Set((a << 2) + 1, a);
 					g_fpsString->SetDefaultColor((a << 2) + 2);
 					g_fpsString->Set((a << 2) + 3, fps.str());
 					fps.str("");
@@ -675,7 +675,7 @@ class Game : public CloakEngine::Global::IGameEvent {
 
 class Input : public CloakEngine::Global::IInputEvent {
 	public:
-		virtual void CLOAK_CALL_THIS Delete() override { delete this; }
+		virtual void CLOAK_CALL_THIS Delete() override { }
 		virtual void CLOAK_CALL_THIS OnMouseMove(In CloakEngine::Global::Input::User user, In const CloakEngine::Global::Math::Space2D::Vector& direction, In const CloakEngine::Global::Math::Space2D::Point& resPos, In unsigned long long etime) override
 		{
 			if (direction.X != 0 || direction.Y != 0)
@@ -716,7 +716,7 @@ class Input : public CloakEngine::Global::IInputEvent {
 
 class Lobby : public CloakEngine::Global::ILobbyEvent {
 	public:
-		virtual void CLOAK_CALL_THIS Delete() override { delete this; }
+		virtual void CLOAK_CALL_THIS Delete() override { }
 		virtual void CLOAK_CALL_THIS OnConnect(In CloakEngine::Global::IConnection* con) override 
 		{
 			const std::string type = con->GetType() == CloakEngine::Global::Lobby::ConnectionType::Client ? "Client" : "Server";
@@ -762,13 +762,16 @@ class Lobby : public CloakEngine::Global::ILobbyEvent {
 };
 
 class Factory : public CloakEngine::Global::IGameEventFactory {
+	private:
+		Game m_game;
+		Input m_input;
+		Lobby m_lobby;
 	public:
-		virtual void CLOAK_CALL_THIS Delete() const override { delete this; }
-		virtual CloakEngine::Global::IGameEvent* CLOAK_CALL_THIS CreateGame() const override { return new Game(); }
-		virtual CloakEngine::Global::ILauncherEvent* CLOAK_CALL_THIS CreateLauncher() const override { return nullptr; }
-		virtual CloakEngine::Global::IInputEvent* CLOAK_CALL_THIS CreateInput() const override { return new Input(); }
-		virtual CloakEngine::Global::ILobbyEvent* CLOAK_CALL_THIS CreateLobby() const override { return new Lobby(); }
-		virtual CloakEngine::Global::IDebugEvent* CLOAK_CALL_THIS CreateDebug() const override { return nullptr; }
+		virtual CloakEngine::Global::IGameEvent* CLOAK_CALL_THIS CreateGame() override { return &m_game; }
+		virtual CloakEngine::Global::ILauncherEvent* CLOAK_CALL_THIS CreateLauncher() override { return nullptr; }
+		virtual CloakEngine::Global::IInputEvent* CLOAK_CALL_THIS CreateInput() override { return &m_input; }
+		virtual CloakEngine::Global::ILobbyEvent* CLOAK_CALL_THIS CreateLobby() override { return &m_lobby; }
+		virtual CloakEngine::Global::IDebugEvent* CLOAK_CALL_THIS CreateDebug() override { return nullptr; }
 };
 
 _Use_decl_annotations_ int CALLBACK WinMain(HINSTANCE hInst, HINSTANCE hPrev, LPSTR cmds, int cmdShow)
@@ -782,6 +785,6 @@ _Use_decl_annotations_ int CALLBACK WinMain(HINSTANCE hInst, HINSTANCE hPrev, LP
 	info.useWindow = true;
 	info.useConsole = true;
 	info.useSteam = false;
-	CloakEngine::Global::Game::StartEngine(new Factory(), info);
+	CloakEngine::Global::Game::StartEngine(&Factory(), info);
 	return 0;
 }

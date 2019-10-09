@@ -13,7 +13,7 @@
 namespace CloakEngine {
 	namespace Engine {
 		namespace Thread {
-			constexpr size_t START_FUNC_COUNT = CLOAKENGINE_CAN_COM_MAX_LEVEL - 1;
+			constexpr size_t START_FUNC_COUNT = Impl::Global::Game::ThreadComState::MAX_LEVEL - 1;
 			constexpr size_t STOP_FUNC_COUNT = 2;
 			enum FLAGS {
 				FLAG_NONE = 0,
@@ -58,9 +58,9 @@ namespace CloakEngine {
 #ifdef _DEBUG
 					const std::string m_label;
 #endif
-					Impl::Global::Game::ThreadSleepInfo m_tsi;
-					Impl::Global::Game::ThreadFPSInfo m_tfi;
-					Impl::Global::Game::ThreadCanComInfo m_canCom;
+					Impl::Global::Game::ThreadSleepState m_tsi;
+					Impl::Global::Game::ThreadFPSState m_tfi;
+					Impl::Global::Game::ThreadComState m_canCom;
 					std::atomic<bool> m_run;
 					std::atomic<bool> m_running;
 					std::atomic<bool> m_paused;

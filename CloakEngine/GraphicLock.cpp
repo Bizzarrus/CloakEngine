@@ -64,7 +64,7 @@ namespace CloakEngine {
 						if (setting.HasUpdate == true)
 						{
 							API::Global::Graphic::Settings newSet;
-							Impl::Global::Graphic::GetModifedSettings(&newSet);
+							API::Global::Graphic::GetSettings(&newSet);
 							WindowHandler::updateSettings(newSet, setting.Settings);
 							Core::UpdateSettings(newSet, setting.Settings, setting.Flag);
 						}

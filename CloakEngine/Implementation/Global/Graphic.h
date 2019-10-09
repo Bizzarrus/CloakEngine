@@ -11,7 +11,6 @@ namespace CloakEngine {
 			namespace Graphic {
 				void CLOAK_CALL Initialize();
 				void CLOAK_CALL Release();
-				void CLOAK_CALL GetModifedSettings(Out API::Global::Graphic::Settings* gset);
 			}
 		}
 	}

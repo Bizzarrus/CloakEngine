@@ -252,7 +252,7 @@ namespace CloakEngine {
 					return SavePtr::iQueryInterface(riid, ptr);
 				}
 
-				CLOAK_CALL MultithreadedWriteBuffer::MultithreadedWriteBuffer(In const CE::RefPointer<API::Files::Buffer_v1::IWriteBuffer>& dst, In_opt std::function<void(In void* userData, In uint64_t size)> onWrite, In_opt API::Global::Threading::ScheduleHint writingHint) : m_onWrite(onWrite), m_writeTaskHint(writingHint), m_target(dst)
+				CLOAK_CALL MultithreadedWriteBuffer::MultithreadedWriteBuffer(In const CE::RefPointer<API::Files::Buffer_v1::IWriteBuffer>& dst, In_opt std::function<void(In void* userData, In uint64_t size)> onWrite, In_opt API::Global::Threading::Flag flags) : m_onWrite(onWrite), m_writeFlags(flags), m_target(dst)
 				{
 					DEBUG_NAME(MultithreadedWriteBuffer);
 					CREATE_INTERFACE(CE_QUERY_ARGS(&m_sync));
@@ -483,7 +483,7 @@ namespace CloakEngine {
 							API::Global::Task t = API::Global::PushTask([parent](In size_t threadID) { parent->OnWrite(); });
 							t.AddDependency(m_parent->m_task);
 							m_parent->m_finish.AddDependency(t);
-							t.Schedule(m_parent->m_writeTaskHint);
+							t.Schedule(m_parent->m_writeFlags);
 							m_parent->m_task = t;
 						}
 						lock.unlock();
@@ -1036,13 +1036,13 @@ namespace CloakEngine {
 				{
 					return CE::RefPointer<IHTTPReadBuffer>::Construct<Engine::Compress::NetBuffer::HTTPBuffer>();
 				}
-				CLOAKENGINE_API CE::RefPointer<IMultithreadedWriteBuffer> CLOAK_CALL CreateMultithreadedWriteBuffer(In const CE::RefPointer<API::Files::Buffer_v1::IWriteBuffer>& dst, In_opt std::function<void(In void* userData, In uint64_t size)> onWrite, In_opt API::Global::Threading::ScheduleHint writingHint)
+				CLOAKENGINE_API CE::RefPointer<IMultithreadedWriteBuffer> CLOAK_CALL CreateMultithreadedWriteBuffer(In const CE::RefPointer<API::Files::Buffer_v1::IWriteBuffer>& dst, In_opt std::function<void(In void* userData, In uint64_t size)> onWrite, In_opt API::Global::Threading::Flag flags)
 				{
-					return CE::RefPointer<IMultithreadedWriteBuffer>::Construct<Impl::Files::Buffer_v1::MultithreadedWriteBuffer>(dst, onWrite, writingHint);
+					return CE::RefPointer<IMultithreadedWriteBuffer>::Construct<Impl::Files::Buffer_v1::MultithreadedWriteBuffer>(dst, onWrite, flags);
 				}
-				CLOAKENGINE_API CE::RefPointer<IMultithreadedWriteBuffer> CLOAK_CALL CreateMultithreadedWriteBuffer(In const CE::RefPointer<IWriteBuffer>& dst, In API::Global::Threading::ScheduleHint writingHint)
+				CLOAKENGINE_API CE::RefPointer<IMultithreadedWriteBuffer> CLOAK_CALL CreateMultithreadedWriteBuffer(In const CE::RefPointer<IWriteBuffer>& dst, In API::Global::Threading::Flag flags)
 				{
-					return CreateMultithreadedWriteBuffer(dst, nullptr, writingHint);
+					return CreateMultithreadedWriteBuffer(dst, nullptr, flags);
 				}
 				CLOAKENGINE_API std::string CLOAK_CALL GetFullFilePath(In const std::string& path)
 				{

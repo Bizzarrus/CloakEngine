@@ -69,7 +69,7 @@ namespace CloakEngine {
 					API::Global::Math::Matrix ClipToView;
 					API::Global::Math::Vector ViewPosition;
 				};
-				CLOAK_INTERFACE_ID("{2C325CE4-CF60-446B-822E-D6617E8EEBCE}") IRenderWorker : public virtual Helper::SavePtr_v1::ISavePtr {
+				CLOAK_INTERFACE_ID("{2C325CE4-CF60-446B-822E-D6617E8EEBCE}") IRenderWorker {
 					public:
 						virtual void* CLOAK_CALL_THIS StartDraw(In IManager* manager, In Rendering::IContext* context, In size_t bufferSize) = 0;
 						virtual void* CLOAK_CALL_THIS StartDraw(In IManager* manager, In Rendering::CONTEXT_TYPE type, In uint32_t nodeID, In size_t bufferSize) = 0;
@@ -93,10 +93,10 @@ namespace CloakEngine {
 				};
 				CLOAK_INTERFACE_ID("{886CF8A8-A6D3-475D-AB4D-957F71DA1CAB}") IRenderPass : public virtual Helper::SavePtr_v1::ISavePtr {
 					public:
-						virtual void CLOAK_CALL_THIS OnInit(In IManager* manager) = 0;
-						virtual void CLOAK_CALL_THIS OnResize(In IManager* manager, In const Global::Graphic::Settings& newSet, In const Global::Graphic::Settings& oldSet, In bool updateShaders) = 0;
-						virtual void CLOAK_CALL_THIS OnRenderCamera(In IManager* manager, Inout Rendering::IContext** context, In IRenderWorker* worker, In Components::ICamera* camera, In const RenderTargetData& target, In const CameraData& camData, In const PassData& pass, In API::Global::Time etime) = 0;
-						virtual void CLOAK_CALL_THIS OnRenderInterface(In IManager* manager, Inout Rendering::IContext** context, In IRenderWorker* worker, In IColorBuffer* screen, In size_t numGuis, In API::Interface::IBasicGUI** guis, In const PassData& pass, In API::Global::Time etime) = 0;
+						virtual void CLOAK_CALL_THIS OnInit(In const CE::RefPointer<IManager>& manager) = 0;
+						virtual void CLOAK_CALL_THIS OnResize(In const CE::RefPointer<IManager>& manager, In const Global::Graphic::Settings& newSet, In const Global::Graphic::Settings& oldSet, In bool updateShaders) = 0;
+						virtual void CLOAK_CALL_THIS OnRenderCamera(In const CE::RefPointer<IManager>& manager, Inout Rendering::IContext** context, In IRenderWorker* worker, In Components::ICamera* camera, In const RenderTargetData& target, In const CameraData& camData, In const PassData& pass, In API::Global::Time etime) = 0;
+						virtual void CLOAK_CALL_THIS OnRenderInterface(In const CE::RefPointer<IManager>& manager, Inout Rendering::IContext** context, In IRenderWorker* worker, In IColorBuffer* screen, In size_t numGuis, In API::Interface::IBasicGUI** guis, In const PassData& pass) = 0;
 				};
 			}
 		}

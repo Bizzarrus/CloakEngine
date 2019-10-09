@@ -18,7 +18,8 @@ namespace CloakEngine {
 						virtual HRESULT CLOAK_CALL_THIS ResizeBuffers(In UINT frameCount, In UINT width, In UINT height) = 0;
 						virtual bool CLOAK_CALL_THIS GetFullscreenState() const = 0;
 						virtual void CLOAK_CALL_THIS SetFullscreenState(In bool state) = 0;
-						virtual void CLOAK_CALL_THIS ResizeTarget(Inout SWAPCHAIN_MODE* mode) = 0;
+						virtual void CLOAK_CALL_THIS ResizeTarget(In const SWAPCHAIN_MODE& mode) = 0;
+						virtual void CLOAK_CALL_THIS ResizeTarget(In UINT width, In UINT height) = 0;
 						virtual UINT CLOAK_CALL_THIS GetCurrentBackBufferIndex() = 0;
 						virtual bool CLOAK_CALL_THIS SupportHDR() = 0;
 						virtual API::Rendering::IColorBuffer* CLOAK_CALL_THIS GetCurrentBackBuffer() = 0;

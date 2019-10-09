@@ -335,7 +335,7 @@ namespace CloakCompiler {
 								CE::Global::Task t = [this](In size_t threadID) { this->ExecuteResponse(); };
 								t.AddDependency(m_task);
 								m_task = t;
-								m_task.Schedule(CE::Global::Threading::ScheduleHint::Important, threadID);
+								m_task.Schedule(CE::Global::Threading::Priority::High, threadID);
 							}
 						}
 				};
@@ -1013,7 +1013,7 @@ namespace CloakCompiler {
 
 							writer->Save();
 						};
-						t.Schedule(CE::Global::Threading::ScheduleHint::IO);
+						t.Schedule(CE::Global::Threading::Flag::IO);
 						return t;
 					}
 					CE::Global::Task CLOAK_CALL WriteCMakeFile(In const CE::List<SHADER>& shaders, In const CE::Files::UFI& path, In const std::string& name, In bool shared)
@@ -1024,7 +1024,7 @@ namespace CloakCompiler {
 							file.AddFile("Common.h", true);
 							for (size_t a = 0; a < shaders.size(); a++) { file.AddFile(shaders[a].Name); }
 						};
-						t.Schedule(CE::Global::Threading::ScheduleHint::IO);
+						t.Schedule(CE::Global::Threading::Flag::IO);
 						return t;
 					}
 					CE::RefPointer<CloakEngine::Files::IWriter> CLOAK_CALL WriteSourceFile(In const CE::RefPointer<CloakEngine::Files::IWriter>& header, In const CE::Files::UFI& path, In const std::string& name, In const std::string& shaderName, In size_t tabCount)
@@ -1840,7 +1840,7 @@ namespace CloakCompiler {
 					if (file != nullptr) { file->WriteDynamic(shaders.size()); }
 
 					CE::Files::IMultithreadedWriteBuffer* fileBuffer = nullptr;
-					if (file != nullptr) { fileBuffer = CE::Files::CreateMultithreadedWriteBuffer(file, [file, &shaders](void* data, uint64_t size) { File::WriteShaderStart(file, shaders[reinterpret_cast<uintptr_t>(data)], size); }, CE::Global::Threading::ScheduleHint::IO); }
+					if (file != nullptr) { fileBuffer = CE::Files::CreateMultithreadedWriteBuffer(file, [file, &shaders](void* data, uint64_t size) { File::WriteShaderStart(file, shaders[reinterpret_cast<uintptr_t>(data)], size); }, CE::Global::Threading::Flag::IO); }
 					CE::Files::IMultithreadedWriteBuffer* headBuffer = nullptr;
 					if (header != nullptr) { headBuffer = CE::Files::CreateMultithreadedWriteBuffer(header); }
 					CE::Global::Task finish = [fileBuffer, headBuffer, header, file, desc, tabCount](In size_t threadID) {
@@ -1894,17 +1894,17 @@ namespace CloakCompiler {
 								cmp.AddDependency(CompileShader(threadID, compiler, f, srcHeader, encode, shaders[a].Desc, shaders[a].Name, tabCount + 3, passCounts, a));
 							}
 							finish.AddDependency(cmp);
-							cmp.Schedule(CE::Global::Threading::ScheduleHint::IO, threadID);
+							cmp.Schedule(CE::Global::Threading::Flag::IO, threadID);
 						};
 						finish.AddDependency(task);
-						task.Schedule(CE::Global::Threading::ScheduleHint::IO);
+						task.Schedule(CE::Global::Threading::Flag::IO);
 					}
 					if (header != nullptr) 
 					{ 
 						finish.AddDependency(Library::WriteCMakeFile(shaders, desc.Lib.Path, desc.ShaderName, desc.Lib.SharedLib)); 
 						finish.AddDependency(Library::WriteCommonFile(desc.Lib.Path, desc.ShaderName)); 
 					}
-					finish.Schedule(CE::Global::Threading::ScheduleHint::IO);
+					finish.Schedule(CE::Global::Threading::Flag::IO);
 					finish.WaitForExecution();
 					if ((desc.Mode & WRITE_MODE_LIB) != 0) { Engine::Lib::Compile(desc.Lib.Path, desc.Lib.Generator); }
 				}

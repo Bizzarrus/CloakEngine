@@ -1215,7 +1215,7 @@ namespace CloakEngine {
 				SAVE_RELEASE(g_renderShadowDepthBuffer);
 				g_pso.Release();
 			}
-			void CLOAK_CALL_THIS DefaultRenderPass::OnInit(In API::Rendering::IManager* manager)
+			void CLOAK_CALL_THIS DefaultRenderPass::OnInit(In const CE::RefPointer<API::Rendering::IManager>& manager)
 			{
 				g_projBuffer = manager->CreateConstantBuffer(API::Rendering::CONTEXT_TYPE_GRAPHIC, 0, sizeof(ProjBuffer));
 				g_viewBuffer = manager->CreateConstantBuffer(API::Rendering::CONTEXT_TYPE_GRAPHIC, 0, sizeof(ViewBuffer));
@@ -1227,7 +1227,7 @@ namespace CloakEngine {
 				manager->GenerateViews(rndBuff, ARRAYSIZE(rndBuff), API::Rendering::DescriptorPageType::UTILITY);
 				g_pso.Create(manager);
 			}
-			void CLOAK_CALL_THIS DefaultRenderPass::OnResize(In API::Rendering::IManager* manager, In const API::Global::Graphic::Settings& newSet, In const API::Global::Graphic::Settings& oldSet, In bool updateShaders)
+			void CLOAK_CALL_THIS DefaultRenderPass::OnResize(In const CE::RefPointer<API::Rendering::IManager>& manager, In const API::Global::Graphic::Settings& newSet, In const API::Global::Graphic::Settings& oldSet, In bool updateShaders)
 			{
 				const bool first = !g_createdRessources.exchange(true);
 				bool updateFrameBuffer = false;
@@ -1431,7 +1431,7 @@ namespace CloakEngine {
 				}
 				if (first || updateShaders) { g_pso.Reset(newSet, manager->GetHardwareSetting()); }
 			}
-			void CLOAK_CALL_THIS DefaultRenderPass::OnRenderCamera(In API::Rendering::IManager* manager, Inout API::Rendering::IContext** context, In API::Rendering::IRenderWorker* worker, In API::Components::ICamera* camera, In const API::Rendering::RenderTargetData& target, In const API::Rendering::CameraData& camData, In const API::Rendering::PassData& pass, In API::Global::Time etime)
+			void CLOAK_CALL_THIS DefaultRenderPass::OnRenderCamera(In const CE::RefPointer<API::Rendering::IManager>& manager, Inout API::Rendering::IContext** context, In API::Rendering::IRenderWorker* worker, In API::Components::ICamera* camera, In const API::Rendering::RenderTargetData& target, In const API::Rendering::CameraData& camData, In const API::Rendering::PassData& pass, In API::Global::Time etime)
 			{
 				const UINT W = g_screenW;
 				const UINT H = g_screenH;
@@ -1468,7 +1468,7 @@ namespace CloakEngine {
 				RenderPasses::ToneMappingAndFinal(con, ppF, target, pass.Gamma, pass.HDR, camData.Bloom.Boost);
 				*context = con;
 			}
-			void CLOAK_CALL_THIS DefaultRenderPass::OnRenderInterface(In API::Rendering::IManager* manager, Inout API::Rendering::IContext** context, In API::Rendering::IRenderWorker* worker, In API::Rendering::IColorBuffer* screen, In size_t numGuis, In API::Interface::IBasicGUI** guis, In const API::Rendering::PassData& pass, In API::Global::Time etime)
+			void CLOAK_CALL_THIS DefaultRenderPass::OnRenderInterface(In const CE::RefPointer<API::Rendering::IManager>& manager, Inout API::Rendering::IContext** context, In API::Rendering::IRenderWorker* worker, In API::Rendering::IColorBuffer* screen, In size_t numGuis, In API::Interface::IBasicGUI** guis, In const API::Rendering::PassData& pass)
 			{
 #ifdef PRINT_PERFORMANCE_TIMER
 				CloakStartTimer(g_timerInterface);

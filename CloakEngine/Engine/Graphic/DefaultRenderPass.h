@@ -17,10 +17,10 @@ namespace CloakEngine {
 				public:
 					CLOAK_CALL DefaultRenderPass();
 					virtual CLOAK_CALL ~DefaultRenderPass();
-					virtual void CLOAK_CALL_THIS OnInit(In API::Rendering::IManager* manager) override;
-					virtual void CLOAK_CALL_THIS OnResize(In API::Rendering::IManager* manager, In const API::Global::Graphic::Settings& newSet, In const API::Global::Graphic::Settings& oldSet, In bool updateShaders) override;
-					virtual void CLOAK_CALL_THIS OnRenderCamera(In API::Rendering::IManager* manager, Inout API::Rendering::IContext** context, In API::Rendering::IRenderWorker* worker, In API::Components::ICamera* camera, In const API::Rendering::RenderTargetData& target, In const API::Rendering::CameraData& camData, In const API::Rendering::PassData& pass, In API::Global::Time etime) override;
-					virtual void CLOAK_CALL_THIS OnRenderInterface(In API::Rendering::IManager* manager, Inout API::Rendering::IContext** context, In API::Rendering::IRenderWorker* worker, In API::Rendering::IColorBuffer* screen, In size_t numGuis, In API::Interface::IBasicGUI** guis, In const API::Rendering::PassData& pass, In API::Global::Time etime) override;
+					virtual void CLOAK_CALL_THIS OnInit(In const CE::RefPointer<API::Rendering::IManager>& manager) override;
+					virtual void CLOAK_CALL_THIS OnResize(In const CE::RefPointer<API::Rendering::IManager>& manager, In const API::Global::Graphic::Settings& newSet, In const API::Global::Graphic::Settings& oldSet, In bool updateShaders) override;
+					virtual void CLOAK_CALL_THIS OnRenderCamera(In const CE::RefPointer<API::Rendering::IManager>& manager, Inout API::Rendering::IContext** context, In API::Rendering::IRenderWorker* worker, In API::Components::ICamera* camera, In const API::Rendering::RenderTargetData& target, In const API::Rendering::CameraData& camData, In const API::Rendering::PassData& pass, In API::Global::Time etime) override;
+					virtual void CLOAK_CALL_THIS OnRenderInterface(In const CE::RefPointer<API::Rendering::IManager>& manager, Inout API::Rendering::IContext** context, In API::Rendering::IRenderWorker* worker, In API::Rendering::IColorBuffer* screen, In size_t numGuis, In API::Interface::IBasicGUI** guis, In const API::Rendering::PassData& pass) override;
 				protected:
 					Success(return == true) virtual bool CLOAK_CALL_THIS iQueryInterface(In REFIID riid, Outptr void** ptr) override;
 			};

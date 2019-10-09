@@ -322,6 +322,234 @@ namespace CloakEngine {
 					template<typename... C> using Group = ComponentGroup<Predicate::unique_list<C...>::value && Predicate::all_base_of<Component, C...>::value, C...>;
 			};
 			template<typename... C> using Group = ComponentManager::Group<C...>;
+			namespace ComponentManager_v2 {
+				CLOAK_INTERFACE IComponentCache : public API::Helper::SavePtr_v1::IBasicPtr{
+					public:
+						virtual size_t CLOAK_CALL_THIS GetSize() const = 0;
+						virtual void CLOAK_CALL_THIS Get(In size_t pos, Out void** data) = 0;
+				};
+				class ComponentManager {
+					private:
+						static CLOAKENGINE_API CE::RefPointer<IComponentCache> CLOAK_CALL RequestCache(In size_t count, In_reads(count) const type_name* ids);
+
+						template<bool Enable, typename... Components> class ComponentGroup {};
+						template<typename... Components> class ComponentGroup<true, Components...> {
+							private:
+								static constexpr type_name ID[] = { name_of_type<Components>()... };
+								static constexpr size_t COMPONENT_COUNT = number_of_types<Components...>();
+								static_assert(COMPONENT_COUNT == ARRAYSIZE(ID));
+
+								template<typename T> struct AdjustType{ typedef T type; };
+								template<typename T> struct AdjustType<const T> { typedef typename AdjustType<T>::type type; };
+								template<typename T> struct AdjustType<volatile T> { typedef typename AdjustType<T>::type type; };
+								template<typename T> struct AdjustType<T*>{ typedef typename AdjustType<T>::type type; };
+								template<typename T> struct AdjustType<T&> { typedef typename AdjustType<T>::type type; };
+
+								CE::RefPointer<IComponentCache> m_cache;
+							public:
+								CLOAK_CALL ComponentGroup()
+								{
+									m_cache = RequestCache(COMPONENT_COUNT, ID);
+								}
+								CLOAK_CALL ComponentGroup(In const ComponentGroup& o) = default;
+								CLOAK_CALL ComponentGroup(In ComponentGroup&& o) = default;
+								CLOAK_CALL ~ComponentGroup() = default;
+
+								ComponentGroup& CLOAK_CALL_THIS operator=(In const ComponentGroup& o) = default;
+								ComponentGroup& CLOAK_CALL_THIS operator=(In ComponentGroup&& o) = default;
+
+								class value_type {
+									friend class const_iterator;
+									friend class ComponentGroup;
+									private:
+										CE::RefPointer<IComponentCache> m_cache;
+										void* m_data[COMPONENT_COUNT];
+
+										CLOAK_CALL value_type(In const CE::RefPointer<IComponentCache>& cache, In size_t pos) : m_cache(cache)
+										{
+											if (cache != nullptr && pos > 0 && pos <= cache->GetSize()) { cache->Get(pos - 1, m_data); }
+											else 
+											{ 
+												for (size_t a = 0; a < COMPONENT_COUNT; a++) { m_data[a] = nullptr; } 
+											}
+										}
+									public:
+										CLOAK_CALL value_type(In const value_type& o) = default;
+										CLOAK_CALL value_type(In value_type&& o) = default;
+
+										value_type& CLOAK_CALL_THIS operator=(In const value_type& o) = default;
+										value_type& CLOAK_CALL_THIS operator=(In value_type&& o) = default;
+
+										template<typename A, typename = std::enable_if<(index_of_type<typename AdjustType<A>::type> < COMPONENT_COUNT)>::type> CE::RefPointer<typename AdjustType<A>::type> CLOAK_CALL_THIS Get() const
+										{
+											typedef typename AdjustType<A>::type T;
+											const size_t i = index_of_type<T, Components...>;
+											static_assert(i < COMPONENT_COUNT); //Sanity Check
+											return reinterpret_cast<T>(m_data[i]);
+										}
+								};
+								class const_iterator {
+									friend class ComponentGroup;
+									public:
+										typedef std::random_access_iterator_tag iterator_category;
+										typedef intptr_t difference_type;
+										typedef size_t size_type;
+										typedef ComponentGroup::value_type value_type;
+										typedef const value_type& reference;
+										typedef const value_type* pointer;
+									private:
+										CE::RefPointer<IComponentCache> m_cache;
+										size_t m_pos;
+										value_type m_value;
+
+										CLOAK_CALL const_iterator(In const CE::RefPointer<IComponentCache>& cache, In size_t pos) : m_cache(cache), m_pos(pos), m_value(cache, pos) {}
+									public:
+										CLOAK_CALL const_iterator(In_opt nullptr_t = nullptr) : m_cache(nullptr), m_pos(0), m_value(nullptr, 0) {}
+										CLOAK_CALL const_iterator(In const const_iterator& o) = default;
+										CLOAK_CALL const_iterator(In const_iterator&& o) = default;
+
+										const_iterator& CLOAK_CALL_THIS operator=(In const const_iterator& o) = default;
+										const_iterator& CLOAK_CALL_THIS operator=(In const_iterator&& o) = default;
+										const_iterator& CLOAK_CALL_THIS operator=(In nullptr_t)
+										{
+											m_cache = nullptr;
+											m_pos = 0;
+											m_value = value_type(nullptr, 0);
+											return *this;
+										}
+
+										const_iterator& CLOAK_CALL_THIS operator++() { return operator+=(1); }
+										const_iterator CLOAK_CALL_THIS operator++(In int)
+										{
+											const_iterator r(*this);
+											operator++();
+											return r;
+										}
+										const_iterator& CLOAK_CALL_THIS operator--() { return operator-=(1); }
+										const_iterator CLOAK_CALL_THIS operator--(In int)
+										{
+											const_iterator r(*this);
+											operator--();
+											return r;
+										}
+										const_iterator CLOAK_CALL_THIS operator+(In difference_type i) const { return const_iterator(*this) += i; }
+										const_iterator CLOAK_CALL_THIS operator-(In difference_type i) const { return const_iterator(*this) -= i; }
+										const_iterator& CLOAK_CALL_THIS operator+=(In difference_type i)
+										{
+											if (i < 0) { return operator-=(-i); }
+											if (i > 0 && m_cache != nullptr)
+											{
+												const size_t s = m_cache->GetSize();
+												if (m_pos < s)
+												{
+													m_pos += i;
+													if (m_pos > s) { m_pos = s + 1; }
+													m_value = value_type(m_cache, m_pos);
+												}
+											}
+											return *this;
+										}
+										const_iterator& CLOAK_CALL_THIS operator-=(In difference_type i)
+										{
+											if (i < 0) { return operator+=(-i); }
+											if (i > 0 && m_cache != nullptr)
+											{
+												if (m_pos > i) 
+												{ 
+													m_pos -= i; 
+													m_value = value_type(m_cache, m_pos);
+												}
+												else 
+												{ 
+													m_pos = 0; 
+													m_value = value_type(nullptr, 0);
+												}
+											}
+											return *this;
+										}
+
+										value_type CLOAK_CALL_THIS operator[](In size_t i) const { return value_type(m_cache, m_pos + i); }
+										reference CLOAK_CALL_THIS operator*() { return m_value; }
+										pointer CLOAK_CALL_THIS operator->() { return &m_value; }
+
+										bool CLOAK_CALL_THIS operator==(In const const_iterator& o) const 
+										{
+											if (m_cache == nullptr || o.m_cache == nullptr)
+											{
+												return (m_pos == 0 || (m_cache != nullptr && m_pos == m_cache->GetSize() + 1)) && (o.m_pos == 0 || (o.m_cache != nullptr && o.m_pos == o.m_cache->GetSize() + 1));
+											}
+											return o.m_cache == m_cache && o.m_pos == m_pos; 
+										}
+										bool CLOAK_CALL_THIS operator!=(In const const_iterator& o) const 
+										{ 
+											if (m_cache == nullptr || o.m_cache == nullptr)
+											{
+												return (m_cache != nullptr && m_pos > 0 && m_pos <= m_cache->GetSize()) || (o.m_cache != nullptr && o.m_pos > 0 && o.m_pos <= m_cache->GetSize());
+											}
+											return o.m_cache != m_cache || o.m_pos != m_pos; 
+										}
+										bool CLOAK_CALL_THIS operator<(In const const_iterator& o) const 
+										{ 
+											if (m_cache == nullptr || o.m_cache == nullptr) { return false; }
+											return o.m_cache == m_cache && o.m_pos < m_pos;
+										}
+										bool CLOAK_CALL_THIS operator<=(In const const_iterator& o) const 
+										{ 
+											if (m_cache == nullptr || o.m_cache == nullptr) { return operator==(o); }
+											return o.m_cache == m_cache && o.m_pos <= m_pos; 
+										}
+										bool CLOAK_CALL_THIS operator>(In const const_iterator& o) const 
+										{ 
+											if (m_cache == nullptr || o.m_cache == nullptr) { return false; }
+											return o.m_cache == m_cache && o.m_pos > m_pos; 
+										}
+										bool CLOAK_CALL_THIS operator>=(In const const_iterator& o) const 
+										{ 
+											if (m_cache == nullptr || o.m_cache == nullptr) { return operator==(o); }
+											return o.m_cache == m_cache && o.m_pos >= m_pos; 
+										}
+
+										bool CLOAK_CALL_THIS operator==(In nullptr_t) const { return m_pos == 0 || (m_cache != nullptr && m_pos == m_cache->GetSize() + 1); }
+										bool CLOAK_CALL_THIS operator!=(In nullptr_t) const { return m_cache != nullptr && m_pos > 0 && m_pos <= m_cache->GetSize(); }
+										bool CLOAK_CALL_THIS operator<(In nullptr_t) const { return false; }
+										bool CLOAK_CALL_THIS operator<=(In nullptr_t) const { return operator==(nullptr); }
+										bool CLOAK_CALL_THIS operator>(In nullptr_t) const { return false; }
+										bool CLOAK_CALL_THIS operator>=(In nullptr_t) const { return operator==(nullptr); }
+
+										friend bool CLOAK_CALL operator==(In nullptr_t, In const const_iterator& o) { return o == nullptr; }
+										friend bool CLOAK_CALL operator!=(In nullptr_t, In const const_iterator& o) { return o != nullptr; }
+										friend bool CLOAK_CALL operator<(In nullptr_t, In const const_iterator& o) { return false; }
+										friend bool CLOAK_CALL operator<=(In nullptr_t, In const const_iterator& o) { return o == nullptr; }
+										friend bool CLOAK_CALL operator>(In nullptr_t, In const const_iterator& o) { return false; }
+										friend bool CLOAK_CALL operator>=(In nullptr_t, In const const_iterator& o) { return o == nullptr; }
+								};
+								typedef const_iterator iterator;
+								typedef std::reverse_iterator<iterator> reverse_iterator;
+								typedef std::reverse_iterator<const_iterator> const_reverse_iterator;
+
+								iterator CLOAK_CALL_THIS begin() { return iterator(m_cache, 1); }
+								const_iterator CLOAK_CALL_THIS begin() const { return const_iterator(m_cache, 1); }
+								const_iterator CLOAK_CALL_THIS cbegin() const { return const_iterator(m_cache, 1); }
+								reverse_iterator CLOAK_CALL_THIS rbegin() { return reverse_iterator(iterator(m_cache, m_cache->GetSize())); }
+								const_reverse_iterator CLOAK_CALL_THIS rbegin() const { return const_reverse_iterator(const_iterator(m_cache, m_cache->GetSize())); }
+								const_reverse_iterator CLOAK_CALL_THIS crbegin() const { return const_reverse_iterator(const_iterator(m_cache, m_cache->GetSize())); }
+
+								iterator CLOAK_CALL_THIS end() { return iterator(m_cache, m_cache->GetSize() + 1); }
+								const_iterator CLOAK_CALL_THIS end() const { return const_iterator(m_cache, m_cache->GetSize() + 1); }
+								const_iterator CLOAK_CALL_THIS cend() const { return const_iterator(m_cache, m_cache->GetSize() + 1); }
+								reverse_iterator CLOAK_CALL_THIS rend() { return reverse_iterator(iterator(m_cache, 0)); }
+								const_reverse_iterator CLOAK_CALL_THIS rend() const { return const_reverse_iterator(const_iterator(m_cache, 0)); }
+								const_reverse_iterator CLOAK_CALL_THIS crend() const { return const_reverse_iterator(const_iterator(m_cache, 0)); }
+
+								size_t CLOAK_CALL_THIS size() const { return m_cache->GetSize(); }
+								value_type CLOAK_CALL_THIS operator[](In size_t i) const { return value_type(m_cache, i + 1); }
+								value_type CLOAK_CALL_THIS at(In size_t i) const { return value_type(m_cache, i + 1); }
+						};
+					public:
+						template<typename... C> using Group = ComponentGroup<Predicate::unique_list<C...>::value && Predicate::all_base_of<Entity_v2::Component, C...>::value, C...>;
+				};
+				template<typename... C> using Group = ComponentManager::Group<C...>;
+			}
 		}
 	}
 }

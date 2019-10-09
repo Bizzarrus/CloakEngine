@@ -140,7 +140,8 @@ namespace CloakEngine {
 							void CLOAK_CALL_THIS FinishDraw(Inout API::Rendering::IContext** context, In_opt bool increasePassID = true) override;
 							void CLOAK_CALL_THIS WaitForExecution() override;
 
-							void CLOAK_CALL_THIS SetCamera(In size_t id);
+							void CLOAK_CALL_THIS SetCamera(In size_t id) override;
+
 							void CLOAK_CALL_THIS StartUpdate(In Impl::Rendering::IManager* manager);
 							void CLOAK_CALL_THIS PushToUpdate(In API::Rendering::IDrawable2D* toUpdate);
 							void CLOAK_CALL_THIS PushToUpdate(In Impl::Components::IGraphicUpdate* toUpdate);
@@ -593,8 +594,8 @@ namespace CloakEngine {
 						CLOAK_ASSUME(m_finishedExec == false);
 #endif
 						CLOAK_ASSUME(setupState > 0);
-						CLOAK_ASSUME((m_setupStates[id] == 0) == (m_contextPool[id] == nullptr));
 						CLOAK_ASSUME(id < m_size);
+						CLOAK_ASSUME((m_setupStates[id] == 0) == (m_contextPool[id] == nullptr));
 						if (m_setupStates[id] != setupState)
 						{
 							if (m_setupStates[id] == 0) 
@@ -623,8 +624,8 @@ namespace CloakEngine {
 #ifdef _DEBUG
 						CLOAK_ASSUME(m_finishedExec == false);
 #endif
-						CLOAK_ASSUME((m_setupStates[id] == 0) == (m_contextPool[id] == nullptr));
 						CLOAK_ASSUME(id < m_size);
+						CLOAK_ASSUME((m_setupStates[id] == 0) == (m_contextPool[id] == nullptr));
 						Impl::Rendering::ICopyContext** copyPool = reinterpret_cast<Impl::Rendering::ICopyContext**>(m_contextPool);
 						if (m_setupStates[id] == 0) 
 						{ 
@@ -643,8 +644,8 @@ namespace CloakEngine {
 #ifdef _DEBUG
 						CLOAK_ASSUME(m_finishedExec == false);
 #endif
-						CLOAK_ASSUME((m_setupStates[id] == 0) == (m_contextPool[id] == nullptr));
 						CLOAK_ASSUME(id < m_size);
+						CLOAK_ASSUME((m_setupStates[id] == 0) == (m_contextPool[id] == nullptr));
 						Impl::Rendering::ICopyContext** copyPool = reinterpret_cast<Impl::Rendering::ICopyContext**>(m_contextPool);
 						if (m_setupStates[id] == 0)
 						{
@@ -663,8 +664,8 @@ namespace CloakEngine {
 #ifdef _DEBUG
 						CLOAK_ASSUME(m_finishedExec == false);
 #endif
-						CLOAK_ASSUME((m_setupStates[id] == 0) == (m_contextPool[id] == nullptr));
 						CLOAK_ASSUME(id < m_size);
+						CLOAK_ASSUME((m_setupStates[id] == 0) == (m_contextPool[id] == nullptr));
 						Impl::Rendering::ICopyContext** copyPool = reinterpret_cast<Impl::Rendering::ICopyContext**>(m_contextPool);
 						if (m_setupStates[id] == 0)
 						{
@@ -682,7 +683,7 @@ namespace CloakEngine {
 				}
 				DrawWorker::Worker* g_worker = nullptr;
 				
-				inline void CLOAK_CALL RenderFrame(In UINT frameIndex, In unsigned long long etime)
+				inline void CLOAK_CALL RenderFrame(In UINT frameIndex, In API::Global::Time etime)
 				{
 					bool loadScreen = FileLoader::isLoading(API::Files::Priority::NORMAL);
 					if (loadScreen == false) { loadScreen = Impl::Global::Game::checkThreadWaiting(); }
@@ -769,7 +770,7 @@ namespace CloakEngine {
 
 						size_t guiSize = 0;
 						API::Interface::IBasicGUI** guis = Impl::Interface::GetVisibleGUIs(g_frameAlloc, &guiSize);
-						g_renderPass->OnRenderInterface(g_cmdListManager, &context, g_worker, screen, guiSize, guis, pass, etime);
+						g_renderPass->OnRenderInterface(g_cmdListManager, &context, g_worker, screen, guiSize, guis, pass);
 						CLOAK_ASSUME(context != nullptr);
 						for (size_t a = 0; a < guiSize; a++) { guis[a]->Release(); }
 						loadScreen = FileLoader::isLoading(API::Files::Priority::NORMAL);
@@ -849,14 +850,11 @@ namespace CloakEngine {
 					if (gset.WindowMode == API::Global::Graphic::WindowMode::FULLSCREEN || oldSet.WindowMode == API::Global::Graphic::WindowMode::FULLSCREEN)
 					{
 						Impl::Rendering::SWAPCHAIN_MODE mode;
-						mode.Format = API::Rendering::Format::R8G8B8A8_UNORM;
 						mode.Width = gset.Resolution.Width;
 						mode.Height = gset.Resolution.Height;
-						mode.RefreshRate.Numerator = 0;
-						mode.RefreshRate.Denominator = 0;
-						mode.Scaling = Impl::Rendering::SCALING_STRETCHED;
-						mode.ScanlineOrdering = Impl::Rendering::ORDER_PROGRESSIVE;
-						if (gset.WindowMode == API::Global::Graphic::WindowMode::FULLSCREEN) { g_SwapChain->ResizeTarget(&mode); }
+						mode.Scaling = Impl::Rendering::SCALING_UNSPECIFIED;
+						mode.ScanlineOrdering = Impl::Rendering::ORDER_UNSPECIFIED;
+						if (gset.WindowMode == API::Global::Graphic::WindowMode::FULLSCREEN) { g_SwapChain->ResizeTarget(mode); }
 						const bool changed = SetFullscreenState(gset.WindowMode == API::Global::Graphic::WindowMode::FULLSCREEN);
 						if (changed == false || (changed == true && gset.WindowMode != API::Global::Graphic::WindowMode::FULLSCREEN && gset.Resolution.Width == oldSet.Resolution.Width && gset.Resolution.Height == oldSet.Resolution.Height))
 						{
@@ -917,7 +915,7 @@ namespace CloakEngine {
 				void CLOAK_CALL Load()
 				{
 					API::Global::Graphic::Settings set;
-					Impl::Global::Graphic::GetModifedSettings(&set);
+					API::Global::Graphic::GetSettings(&set);
 					g_cmdListManager = Impl::Rendering::IManager::Create(set.RenderMode);
 					if (CloakCheckOK(g_cmdListManager != nullptr, API::Global::Debug::Error::GRAPHIC_NO_MANAGER, true))
 					{
@@ -933,7 +931,7 @@ namespace CloakEngine {
 					if (g_cmdListManager->IsReady())
 					{
 						API::Global::Graphic::Settings set;
-						Impl::Global::Graphic::GetModifedSettings(&set);
+						API::Global::Graphic::GetSettings(&set);
 						InitSettings(set);
 						HRESULT hRet = CreateSwapChain(set);
 						if (CloakCheckError(hRet, API::Global::Debug::Error::GRAPHIC_NO_SWAPCHAIN, true)) { return; }
@@ -967,7 +965,7 @@ namespace CloakEngine {
 					}
 					if (newSet.FieldOfView != oldSet.FieldOfView) { matUpdate = true; }
 					if (newSet.WindowMode != oldSet.WindowMode || newSet.BackBufferCount + 1 != g_curFrameCount || newSet.WindowMode == API::Global::Graphic::WindowMode::FULLSCREEN) { bufUpdate = true; }
-					if ((flag&Lock::SettingsFlag::Shader) != Lock::SettingsFlag::None || newSet.Tessellation != oldSet.Tessellation) { psoUpdate = true; }
+					if ((flag & Lock::SettingsFlag::Shader) != Lock::SettingsFlag::None || newSet.Tessellation != oldSet.Tessellation) { psoUpdate = true; }
 					InitSettings(newSet);
 
 					if (matUpdate) { g_updateProjMatrix = true; }
@@ -1006,7 +1004,7 @@ namespace CloakEngine {
 							{
 								if (WindowHandler::UpdateOnce() == false)
 								{
-									task.WaitForExecution(CE::Global::Threading::Help::Never);
+									task.WaitForExecution(CE::Global::Threading::Flag::All);
 								}
 							}
 
@@ -1021,7 +1019,7 @@ namespace CloakEngine {
 								}
 								if (WindowHandler::UpdateOnce() == false)
 								{
-									worker->HelpWork(CE::Global::Threading::Help::Never);
+									worker->HelpWork(CE::Global::Threading::Flag::None);
 								}
 							} while (true);
 							
@@ -1037,6 +1035,14 @@ namespace CloakEngine {
 					}
 					while (WindowHandler::UpdateOnce() == true) {}
 				}
+				void CLOAK_CALL Submit()
+				{
+					//TODO
+				}
+				void CLOAK_CALL Present()
+				{
+					//TODO
+				}
 				void CLOAK_CALL FinalRelease()
 				{
 					delete g_worker;
@@ -1045,9 +1051,9 @@ namespace CloakEngine {
 					Impl::Interface::LoadScreen::Terminate();
 					if (g_cmdListManager != nullptr)
 					{
-						g_cmdListManager->IdleGPU();
+						g_cmdListManager->WaitForGPU();
 						SetFullscreenState(false);
-						g_cmdListManager->IdleGPU();
+						g_cmdListManager->WaitForGPU();
 						g_cmdListManager->ShutdownAdapters();
 					}
 
@@ -1093,6 +1099,221 @@ namespace CloakEngine {
 				}
 				UINT CLOAK_CALL GetFrameCount() { return g_usedFrameCount; }
 				UINT CLOAK_CALL GetLastShownFrame() { return g_lastShownFrame; }
+			}
+			namespace Core_v2 {
+				enum class SettingsState {
+					REQUIRE_INIT,
+					REQUIRE_UPDATE,
+					UP_TO_DATE,
+				};
+				struct ResizeMsg {
+					uint32_t Width : 32;
+					uint32_t Height : 31;
+					uint32_t Update : 1;
+					CLOAK_CALL ResizeMsg(In UINT w, In UINT h, In_opt bool upd = true) : Width(static_cast<UINT>(w)), Height(static_cast<UINT>(h)), Update(upd == true ? TRUE : FALSE) {}
+				};
+
+				CE::RefPointer<Impl::Rendering::IManager> g_manager = nullptr;
+				CE::RefPointer<Impl::Rendering::ISwapChain> g_swapChain = nullptr;
+				CE::RefPointer<API::Rendering::IRenderPass> g_renderPass = nullptr;
+				CE::RefPointer<API::Helper::ISyncSection> g_syncSettings = nullptr;
+
+				bool g_vSync = false;
+				bool g_inResize = false;
+				bool g_occluded = false;
+				UINT g_frameIndex = 0;
+				size_t g_frameCount = 0;
+				uint64_t* g_fences = nullptr;
+
+				std::atomic<SettingsState> g_updSettings = SettingsState::REQUIRE_INIT;
+				std::atomic<ResizeMsg> g_resize = ResizeMsg(0, 0, false);
+				API::Global::Graphic::Settings g_curSettings;
+				API::Global::Graphic::Settings g_newSettings;
+
+				inline void CLOAK_CALL RecreateFences(In const API::Global::Graphic::Settings& set)
+				{
+					const size_t nfc = set.BackBufferCount + 1;
+					if (nfc != g_frameCount)
+					{
+						const size_t mfc = min(nfc, g_frameCount);
+						uint64_t* n = reinterpret_cast<uint64_t*>(API::Global::Memory::MemoryHeap::Allocate(sizeof(uint64_t) * nfc));
+						for (size_t a = 0; a < mfc; a++) { n[a] = g_fences[a]; }
+						for (size_t a = g_frameCount; a < nfc; a++) { n[a] = 0; }
+						API::Global::Memory::MemoryHeap::Free(g_fences);
+						g_fences = n;
+						g_frameCount = nfc;
+					}
+				}
+
+				void CLOAK_CALL InitializePipeline()
+				{
+					API::Global::Graphic::Settings set;
+					API::Global::Graphic::GetSettings(&set);
+					g_manager = Impl::Rendering::IManager::Create(set.RenderMode);
+					if (CloakCheckOK(g_manager != nullptr, API::Global::Debug::Error::GRAPHIC_NO_MANAGER, true))
+					{
+						HRESULT hRet = g_manager->Create(static_cast<UINT>(set.AdapterID));
+						if (CloakCheckOK(hRet, API::Global::Debug::Error::GRAPHIC_FEATURE_UNSUPPORETD, true)) {}
+					}
+					CREATE_INTERFACE(CE_QUERY_ARGS(&g_syncSettings));
+				}
+				void CLOAK_CALL InitializeWindow()
+				{
+					Impl::Interface::LoadScreen::Initialize();
+					CLOAK_ASSUME(g_manager != nullptr);
+					if (g_manager->IsReady())
+					{
+						API::Global::Graphic::Settings set;
+						API::Global::Graphic::GetSettings(&set);
+						g_curSettings = set;
+						g_curSettings.WindowMode = API::Global::Graphic::WindowMode::WINDOW;
+						RecreateFences(set);
+
+						HRESULT hRet = S_OK;
+						g_swapChain = g_manager->CreateSwapChain(set, &hRet);
+						if (CloakCheckError(hRet, API::Global::Debug::Error::GRAPHIC_NO_SWAPCHAIN, true)) { return; }
+						if (set.WindowMode == API::Global::Graphic::WindowMode::FULLSCREEN)
+						{
+							g_swapChain->ResizeTarget(set.Resolution.Width, set.Resolution.Height);
+							g_swapChain->SetFullscreenState(true);
+						}
+						Impl::Rendering::SWAP_CHAIN_RESULT r = g_swapChain->Present(false, Impl::Rendering::PRESENT_TEST);
+						if (CloakCheckError(r != Impl::Rendering::SWAP_CHAIN_RESULT::FAILED, API::Global::Debug::Error::GRAPHIC_NO_SWAPCHAIN, true)) { return; }
+						g_frameIndex = g_swapChain->GetCurrentBackBufferIndex();
+						if (g_renderPass == nullptr) { g_renderPass = CE::RefPointer<API::Rendering::IRenderPass>::Construct<DefaultRenderPass>(); }
+						g_renderPass->OnInit(g_manager);
+					}
+				}
+				void CLOAK_CALL Shutdown()
+				{
+					Impl::Interface::LoadScreen::Terminate();
+					if (g_manager != nullptr)
+					{
+						g_manager->WaitForGPU();
+						if (g_swapChain != nullptr) { g_swapChain->SetFullscreenState(false); }
+						g_manager->WaitForGPU();
+						g_manager->ShutdownAdapters();
+					}
+
+					API::Global::Memory::MemoryHeap::Free(g_fences);
+
+					g_renderPass.Free();
+					if (g_manager != nullptr) { g_manager->ShutdownMemory(); }
+					g_swapChain.Free();
+					if (g_manager != nullptr) { g_manager->ShutdownDevice(); }
+					g_manager.Free();
+					g_syncSettings.Free();
+				}
+				void CLOAK_CALL UpdateSettings(In const API::Global::Graphic::Settings& nset)
+				{
+					API::Helper::WriteLock lock(g_syncSettings);
+					g_newSettings = nset;
+					lock.unlock();
+					
+					SettingsState e = g_updSettings.load();
+					SettingsState n = SettingsState::REQUIRE_UPDATE;
+					while (e == SettingsState::UP_TO_DATE && g_updSettings.compare_exchange_weak(e, n) == false) {}
+				}
+				void CLOAK_CALL OnResize(In UINT width, In UINT height)
+				{
+					g_resize.store(ResizeMsg(width, height), std::memory_order_release);
+				}
+				void CLOAK_CALL Submit(In size_t threadID, In API::Global::Time etime)
+				{
+					g_manager->Update();
+					ResizeMsg msg = g_resize.load(std::memory_order_acquire);
+					if (msg.Update == TRUE)
+					{
+						ResizeMsg n = msg;
+						n.Update = FALSE;
+						while (g_resize.compare_exchange_weak(msg, n, std::memory_order_acq_rel) == false) 
+						{
+							n = msg;
+							n.Update = FALSE;
+						}
+						HRESULT hRet = g_swapChain->ResizeBuffers(g_frameCount, n.Width, n.Height);
+						CloakCheckOK(hRet, API::Global::Debug::Error::GRAPHIC_RESIZE, false);
+						g_frameIndex = g_swapChain->GetCurrentBackBufferIndex();
+
+						RECT rc;
+						rc.left = 0;
+						rc.top = 0;
+						rc.right = n.Width;
+						rc.bottom = n.Height;
+						Impl::Global::Video::OnSizeChange(&rc);
+
+						//TODO: Call g_renderPass->OnResize to resize GBuffers
+						g_inResize = false;
+					}
+					else if (g_inResize == true) { return; }
+
+					const SettingsState curSS = g_updSettings.exchange(SettingsState::UP_TO_DATE);
+					if (curSS == SettingsState::UP_TO_DATE)
+					{
+						//TODO: Render Frame
+					}
+					else
+					{
+						API::Helper::ReadLock lock(g_syncSettings);
+						const API::Global::Graphic::Settings last = g_curSettings;
+						const API::Global::Graphic::Settings next = g_curSettings = g_newSettings;
+						lock.unlock();
+						g_manager->WaitForGPU();
+						//TODO: Push settings to window handler
+
+						g_vSync = next.VSync;
+						g_renderPass->OnResize(g_manager, next, last, curSS == SettingsState::REQUIRE_INIT || last.Tessellation != next.Tessellation);
+						if (last.BackBufferCount != next.BackBufferCount) { RecreateFences(next); }
+						if (last.Resolution.Width != next.Resolution.Width || last.Resolution.Height != next.Resolution.Height || last.WindowMode != next.WindowMode)
+						{
+							g_swapChain->ResizeTarget(next.Resolution.Width, next.Resolution.Height);
+							if ((last.WindowMode == API::Global::Graphic::WindowMode::FULLSCREEN) != (next.WindowMode == API::Global::Graphic::WindowMode::FULLSCREEN))
+							{
+								g_swapChain->SetFullscreenState(next.WindowMode == API::Global::Graphic::WindowMode::FULLSCREEN);
+							}
+							g_inResize = true;
+						}
+						//TODO:
+						/*
+						g_screenWidth = static_cast<uint32_t>(newSet.Resolution.Width);
+						g_screenHeight = static_cast<uint32_t>(newSet.Resolution.Height);
+						g_fov = newSet.FieldOfView;
+						g_updatedClip = true;
+						g_passEffects.MSAA = newSet.MSAA;
+						g_passEffects.Bloom = newSet.Bloom;
+						g_passEffects.Gamma = newSet.Gamma;
+						if (newSet.MultiThreadedRendering != oldSet.MultiThreadedRendering || g_worker->Initialized() == false)
+						{
+							g_worker->EnableMultithreading(newSet.MultiThreadedRendering && g_cmdListManager->SupportMultiThreadedRendering(), g_cmdListManager);
+						}
+						g_checkDrawing = true;
+						*/
+					}
+				}
+				void CLOAK_CALL Present(In size_t threadID)
+				{
+					if (g_occluded == true || g_inResize == true)
+					{
+						Impl::Rendering::SWAP_CHAIN_RESULT hRet = g_swapChain->Present(false, Impl::Rendering::PRESENT_TEST);
+						if (hRet == Impl::Rendering::SWAP_CHAIN_RESULT::OK) { g_occluded = false; }
+					}
+					else
+					{
+						Impl::Global::Task::IHelpWorker* worker = Impl::Global::Task::GetCurrentWorker(threadID);
+						worker->HelpWorkUntil([]() { return g_manager->IsFenceComplete(API::Rendering::CONTEXT_TYPE_GRAPHIC, 0, g_fences[g_frameIndex]); }, API::Global::Threading::Flag::None, true);
+						worker->HelpWorkWhile([]() {
+							const Impl::Rendering::SWAP_CHAIN_RESULT pr = g_swapChain->Present(g_vSync, Impl::Rendering::PRESENT_NO_WAIT);
+							if (pr != Impl::Rendering::SWAP_CHAIN_RESULT::NEED_RETRY)
+							{
+								if (pr == Impl::Rendering::SWAP_CHAIN_RESULT::OCCLUDED) { g_occluded = true; }
+								return false;
+							}
+							return true;
+						}, API::Global::Threading::Flag::None, true);
+						g_fences[g_frameIndex] = g_manager->IncrementFence(API::Rendering::CONTEXT_TYPE_GRAPHIC, 0);
+					}
+					g_frameIndex = g_swapChain->GetCurrentBackBufferIndex();
+				}
 			}
 		}
 	}

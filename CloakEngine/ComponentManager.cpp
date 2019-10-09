@@ -3,7 +3,9 @@
 #include "Implementation/World/ComponentManager.h"
 
 #include "CloakEngine/Helper/SyncSection.h"
+#include "Implementation/OS.h"
 #include "Implementation/Global/Memory.h"
+#include "Implementation/Global/Task.h"
 #include "Implementation/Components/Render.h"
 #include "Implementation/World/Entity.h"
 
@@ -367,15 +369,6 @@ namespace CloakEngine {
 					bool CLOAK_CALL_THIS operator()(In const CacheHandler& a, In const API::BitSet& b) { return a.Cache->operator<(b); }
 					bool CLOAK_CALL_THIS operator()(In const CacheHandler& a, In const CacheHandler& b) { return a.Cache->operator<(*b.Cache); }
 				};
-			}
-		}
-	}
-}
-
-namespace CloakEngine {
-	namespace Impl {
-		namespace World {
-			namespace ComponentManager {
 
 				API::Helper::ISyncSection* g_sync = nullptr;
 				API::Helper::ISyncSection* g_syncCache = nullptr;
@@ -471,7 +464,7 @@ namespace CloakEngine {
 				{
 					if (Impl::Global::Game::canThreadRun())
 					{
-						API::Helper::Lock lock(Impl::World::ComponentManager::g_syncCache);
+						API::Helper::ReadLock lock(Impl::World::ComponentManager::g_syncCache);
 						for (const auto& a : *g_cache) { a.Cache->PushToUpdate(e, remove); }
 					}
 				}
@@ -641,6 +634,1103 @@ namespace CloakEngine {
 					m_toUpdate[m_updID][e] = remove;
 				}
 			}
+			namespace ComponentManager_v2 {
+				constexpr API::Global::Time MAX_FIX_WAIT_TIME = 1000; //Value in micro seconds
+
+				struct AccessLock {
+					uint16_t Read = 0;
+					uint16_t Write = 0;
+					constexpr CLOAK_CALL AccessLock() : Read(0), Write(0) {}
+					constexpr CLOAK_CALL AccessLock(In uint16_t r, In uint16_t w) : Read(r), Write(w) {}
+				};
+
+				API::FlatMap<type_name, ComponentAllocator*>* g_allocList = nullptr;
+				CE::RefPointer<API::Helper::ISyncSection> g_syncAlloc = nullptr;
+				std::atomic<bool> g_blockAdd = false;
+				std::atomic<AccessLock> g_access;
+				static_assert(decltype(g_access)::is_always_lock_free == true, "AccessLock is too big!");
+
+				template<typename A, typename B> CLOAK_FORCEINLINE void* CLOAK_CALL Move(In A* ptr, In B offset) { return reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(ptr) + offset); }
+				class ComponentCache : public API::World::ComponentManager_v2::IComponentCache {
+					private:
+						typedef API::Global::Memory::MemoryLocal allocator_t;
+						static constexpr size_t PAGE_SIZE = 256 KB;
+
+						struct Page {
+							Page* Next = nullptr;
+						};
+						struct PageData {
+							size_t LineCount;
+							size_t LineSize;
+							size_t PageSize;
+							size_t PageHeaderSize;
+							CLOAK_CALL PageData(In size_t count)
+							{
+								PageHeaderSize = (sizeof(Page) + std::alignment_of<void*>::value - 1) & ~(std::alignment_of<void*>::value - 1);
+								LineSize = count * sizeof(void*);
+								LineCount = (PAGE_SIZE - PageHeaderSize) / LineSize;
+								PageSize = PageHeaderSize + (LineCount * LineSize);
+							}
+						};
+
+						const PageData m_data;
+						const size_t m_count;
+						ComponentAllocator** const m_allocs;
+						size_t m_size;
+						Page* m_page;
+						Page* m_lp;
+						size_t m_lpid;
+						std::atomic<uint64_t> m_ref = 1;
+
+					public:
+						CLOAK_CALL ComponentCache(In size_t count, In_reads(count) ComponentAllocator** allocs) : m_count(count), m_allocs(allocs), m_size(0), m_data(count)
+						{
+							m_page = nullptr;
+							//Creating the iterators:
+							ComponentAllocator::iterator* it = reinterpret_cast<ComponentAllocator::iterator*>(STACK_ALLOCATE((sizeof(ComponentAllocator::iterator) + sizeof(void*)) * m_count));
+							for (size_t a = 0; a < m_count; a++)
+							{
+								m_allocs[a]->AddRef();
+								::new(&it[a])ComponentAllocator::iterator(m_allocs[a]->begin());
+							}
+							//Filling in the pages:
+							void** nslot = reinterpret_cast<void**>(Move(it, sizeof(ComponentAllocator::iterator) * m_count));
+							Page* curPage = nullptr;
+							do {
+								//Find furthest iterator:
+								Entity_v2::EntityID me = 0;
+								size_t mei = 0;
+								size_t mc = 0;
+								for (size_t a = 0; a < count; a++)
+								{
+									if (it[a] == m_allocs[a]->end()) { goto finished_pages; }
+									const auto i = *it[a];
+									nslot[a] = i.second;
+									if (a == 0 || i.first > me)
+									{
+										me = i.first;
+										mei = a;
+										mc = 1;
+									}
+									else if (i.first == me)
+									{
+										mc++;
+										if (mc == count)
+										{
+											CLOAK_ASSUME(a + 1 == count);
+											//We found a full set!
+											const size_t pp = m_size % m_data.LineCount;
+											if (pp == 0)
+											{
+												Page* np = reinterpret_cast<Page*>(allocator_t::Allocate(m_data.PageSize));
+												::new(np)Page();
+												if (m_page != nullptr) { m_page->Next = np; }
+												else { m_page = np; }
+												curPage = np;
+											}
+											CLOAK_ASSUME(curPage != nullptr);
+											void* dst = Move(curPage, m_data.PageHeaderSize + (pp * m_data.LineSize));
+											memcpy(dst, nslot, m_data.LineSize);
+											m_size++;
+											for (size_t b = 0; b < count; b++) { ++it[b]; }
+											goto next_iterator;
+										}
+									}
+								}
+								//Advance all iterators, except the one that was the furthest:
+								for (size_t a = 0; a < count; a++) { if (a != mei) { ++it[a]; } }
+							next_iterator:
+								continue;
+							} while (true);
+						finished_pages:
+							STACK_FREE(it);
+							m_lpid = 0;
+							m_lp = m_page;
+						}
+					private:
+						CLOAK_CALL ~ComponentCache()
+						{
+							while (m_page != nullptr)
+							{
+								Page* n = m_page->Next;
+								allocator_t::Free(m_page);
+								m_page = n;
+							}
+							for (size_t a = 0; a < m_count; a++) { m_allocs[a]->Release(); }
+						}
+					public:
+						static CE::RefPointer<API::World::ComponentManager_v2::IComponentCache> CLOAK_CALL CreateCache(In size_t count, In_reads(count) const type_name* ids)
+						{
+							void* mem = nullptr;
+							size_t s = 0;
+							if constexpr (std::alignment_of<ComponentCache>::value < std::alignment_of<ComponentAllocator*>::value) 
+							{ 
+								s = ((sizeof(ComponentCache) + std::alignment_of<ComponentAllocator*>::value - 1) & ~(std::alignment_of<ComponentAllocator*>::value - 1)); 
+							}
+							else { s = sizeof(ComponentCache); }
+							mem = allocator_t::Allocate(s + (count * sizeof(ComponentAllocator*)));
+							ComponentAllocator** allocs = reinterpret_cast<ComponentAllocator**>(Move(mem, s));
+							ComponentAllocator::FillAllocators(count, ids, allocs);
+							return CE::RefPointer<API::World::ComponentManager_v2::IComponentCache>::ConstructAt<ComponentCache>(mem, count, allocs);
+						}
+
+						size_t CLOAK_CALL_THIS GetSize() const override { return m_size; }
+						void CLOAK_CALL_THIS Get(In size_t pos, Out void** data) override 
+						{
+							if (pos < m_size)
+							{
+								const size_t pid = pos / m_data.LineCount;
+								const size_t pof = pos % m_data.LineCount;
+								if (pid < m_lpid)
+								{
+									m_lpid = 0;
+									m_lp = m_page;
+								}
+								for (; m_lpid < pid; m_lpid++) 
+								{
+									CLOAK_ASSUME(m_lp != nullptr);
+									m_lp = m_lp->Next; 
+								}
+								CLOAK_ASSUME(m_lp != nullptr);
+								memcpy(data, Move(m_lp, m_data.PageHeaderSize + (pof * m_data.LineSize)), m_data.LineSize);
+							}
+							else
+							{
+								for (size_t a = 0; a < m_count; a++) { data[a] = nullptr; }
+							}
+						}
+
+						uint64_t CLOAK_CALL_THIS AddRef() override { return m_ref.fetch_add(1) + 1; }
+						uint64_t CLOAK_CALL_THIS Release() override
+						{
+							uint64_t r = m_ref.fetch_sub(1);
+							if (r == 1) 
+							{ 
+								this->~ComponentCache();
+								allocator_t::Free(this);
+							}
+							else if (r == 0) { CLOAK_ASSUME(false); m_ref = 0; return 0; }
+							return r - 1;
+						}
+				};
+
+				void CLOAK_CALL ComponentAllocator::Initialize()
+				{
+					CREATE_INTERFACE(CE_QUERY_ARGS(&g_syncAlloc));
+					g_allocList = new API::FlatMap<type_name, ComponentAllocator*>();
+				}
+				void CLOAK_CALL ComponentAllocator::Shutdown()
+				{
+					API::Helper::ReadLock lock(g_syncAlloc);
+					g_blockAdd = true;
+					API::Global::Task t2 = [](In size_t threadID) {
+						for (auto a = g_allocList->begin(); a != g_allocList->end(); ++a) { a->second->RemoveAll(); }
+					};
+					API::Global::Task t1 = [&t2](In size_t threadID) { FixAll(threadID, 1, &t2); };
+					lock.unlock();
+					t1.Schedule();
+					t2.Schedule();
+					t2.WaitForExecution(true);
+				}
+				void CLOAK_CALL ComponentAllocator::ReleaseSyncs()
+				{
+					g_syncAlloc.Free();
+				}
+				void CLOAK_CALL ComponentAllocator::Terminate()
+				{
+					for (auto a = g_allocList->begin(); a != g_allocList->end(); ++a) { delete a->second; }
+					delete g_allocList;
+				}
+				inline ComponentAllocator* CLOAK_CALL ComponentAllocator::GetAllocator(In const type_name& type)
+				{
+					API::Helper::ReadLock lock(g_syncAlloc);
+					const auto f = g_allocList->find(type);
+					if (f != g_allocList->end()) { return f->second; }
+					return nullptr;
+				}
+				ComponentAllocator* CLOAK_CALL ComponentAllocator::GetOrCreateAllocator(In const type_name& type, In size_t size, In size_t alignment, In size_t offsetToBase)
+				{
+					ComponentAllocator* r = GetAllocator(type);
+					if (r != nullptr) { return r; }
+					API::Helper::WriteLock lock(g_syncAlloc);
+					const auto f = g_allocList->find(type); //We try another find, since the allocator might have been created by another thread while we were waiting in the lock
+					if (f != g_allocList->end()) { return f->second; }
+					r = new ComponentAllocator(type, size, alignment, offsetToBase);
+					g_allocList->insert(type, r);
+					return r;
+				}
+				inline void CLOAK_CALL ComponentAllocator::FillAllocators(In size_t count, In_reads(count) const type_name* ids, Out_writes(count) ComponentAllocator** result)
+				{
+					API::Helper::ReadLock lock(g_syncAlloc);
+					for (size_t a = 0; a < count; a++)
+					{
+						const auto f = g_allocList->find(ids[a]);
+						if (f != g_allocList->end()) { result[a] = f->second; }
+						else { result[a] = nullptr; }
+					}
+				}
+				void CLOAK_CALL ComponentAllocator::RemoveAll(In Entity_v2::EntityID id)
+				{
+					API::Helper::ReadLock lock(g_syncAlloc);
+					for (auto a = g_allocList->begin(); a != g_allocList->end(); ++a) { a->second->RemoveComponent(id); }
+				}
+				void CLOAK_CALL ComponentAllocator::FixAll(In size_t threadID, In size_t followCount, In_reads(followCount) API::Global::Task* followTasks)
+				{
+					//Lock component access:
+					AccessLock expL = AccessLock(0, 0);
+					AccessLock newL = AccessLock(0, 1);
+					if (g_access.compare_exchange_strong(expL, newL, std::memory_order_acq_rel) == false) { return; }
+					CLOAK_ASSUME(expL.Read == 0);
+					//Start fix:
+					for (auto a = g_allocList->begin(); a != g_allocList->end(); ++a)
+					{
+						if (a->second->RequiresFix())
+						{
+							API::Global::Task fixing = [followCount, followTasks](In size_t threadID) {
+								for (auto a = g_allocList->begin(); a != g_allocList->end(); ++a)
+								{
+									if (a->second->RequiresFix())
+									{
+										ComponentAllocator* c = a->second;
+										API::Global::Task t = [c](In size_t threadID) 
+										{ 
+											c->Fix(); 
+											//Unlock access:
+											AccessLock e = g_access.load(std::memory_order_acquire);
+											AccessLock v;
+											do {
+												v = e;
+												CLOAK_ASSUME(v.Read == 0);
+												CLOAK_ASSUME(v.Write > 0);
+												v.Write--;
+											} while (g_access.compare_exchange_weak(e, v, std::memory_order_acq_rel) == false);
+										};
+										for (size_t b = 0; b < followCount; b++) { followTasks[b].AddDependency(t); }
+										t.Schedule(threadID);
+									}
+								}
+							};
+							for (size_t b = 0; b < followCount; b++) { followTasks[b].AddDependency(fixing); }
+							a = g_allocList->begin();
+							uint16_t wc = 0;
+							for (; a != g_allocList->end(); ++a)
+							{
+								wc++;
+								ComponentAllocator* c = a->second;
+								API::Global::Task t = [c](In size_t threadID) { c->RemoveDeprecatedLinks(); };
+								fixing.AddDependency(t);
+								t.Schedule(threadID);
+							}
+							g_access.store(AccessLock(0, wc), std::memory_order_release);
+							fixing.Schedule(threadID);
+							return;
+						}
+					}
+					//Unlock access:
+					g_access.store(AccessLock(0, 0), std::memory_order_release);
+				}
+				void CLOAK_CALL ComponentAllocator::LockComponentAccess(In size_t threadID)
+				{
+					AccessLock e = g_access.load(std::memory_order_acquire);
+					AccessLock n = e;
+					n.Read++;
+					if (e.Write > 0 || g_access.compare_exchange_strong(e, n, std::memory_order_acq_rel) == false)
+					{
+						Impl::Global::Task::IHelpWorker* worker = Impl::Global::Task::GetCurrentWorker(threadID);
+						do {
+							while (e.Write > 0) 
+							{
+								worker->HelpWork(~API::Global::Threading::Flag::Components);
+								e = g_access.load(std::memory_order_acquire);
+							}
+							n = e;
+							n.Read++;
+						} while (g_access.compare_exchange_weak(e, n, std::memory_order_acq_rel) == false);
+					}
+					CLOAK_ASSUME(e.Write == 0);
+				}
+				void CLOAK_CALL ComponentAllocator::UnlockComponentAccess(In size_t threadID)
+				{
+					AccessLock e = g_access.load(std::memory_order_acquire);
+					AccessLock n;
+					do {
+						n = e;
+						CLOAK_ASSUME(n.Read > 0);
+						CLOAK_ASSUME(n.Write == 0);
+						n.Read--;
+					} while (g_access.compare_exchange_weak(e, n, std::memory_order_acq_rel) == false);
+				}
+
+				CLOAK_CALL ComponentAllocator::ComponentHeader::ComponentHeader(In Entity_v2::EntityID id) : Entity(id) {}
+				CLOAK_CALL ComponentAllocator::ComponentLink::ComponentLink(In const type_name& type, In size_t offset) : Type(type), Offset(offset) {}
+				CLOAK_CALL ComponentAllocator::PageData::PageData(In size_t size, In size_t alignment)
+				{
+					const size_t alignMask = alignment - 1;
+					ComponentHeaderSize = (sizeof(ComponentHeader) + alignMask) & ~alignMask;
+					ComponentSize = ((max(size, sizeof(ComponentLink)) + alignMask) & ~alignMask) + ComponentHeaderSize;
+					PageHeaderSize = (sizeof(PageHeader) + alignMask) & ~alignMask;
+					ComponentCount = (MAX_PAGE_SIZE - PageHeaderSize) / ComponentSize;
+					if (ComponentCount == 0) { ComponentCount = 1; }
+					else if (ComponentCount > 64) { ComponentCount = 64; }
+					PageSize = PageHeaderSize + (ComponentSize * ComponentCount);
+					const Impl::OS::CACHE_DATA& cache = Impl::OS::GetCPUInformation().GetCache(Impl::OS::CacheType::Data, Impl::OS::CacheLevel::L1);
+					if (cache.LineSize > alignment) { PageSize = (PageSize + cache.LineSize - 1) & ~(cache.LineSize - 1); }
+				}
+				CLOAK_CALL ComponentAllocator::SearchResult::SearchResult(In bool found, In size_t globalIndex, In size_t pageIndex, In PageHeader* page) : Found(found), GlobalIndex(globalIndex), PageIndex(pageIndex), Page(page) {}
+
+				CLOAK_CALL ComponentAllocator::iterator::iterator(In const ComponentAllocator* alloc, In PageHeader* page, In size_t position) : m_alloc(alloc), m_page(page), m_pos(position), m_pi(position% alloc->m_data.ComponentCount) {}
+				CLOAK_CALL ComponentAllocator::iterator::iterator() : m_alloc(nullptr), m_page(nullptr), m_pos(0), m_pi(0) {}
+				CLOAK_CALL ComponentAllocator::iterator::iterator(In const iterator& o) : m_alloc(o.m_alloc), m_page(o.m_page), m_pos(o.m_pos), m_pi(o.m_pi) {}
+				CLOAK_CALL ComponentAllocator::iterator::iterator(In iterator&& o) : m_alloc(o.m_alloc), m_page(o.m_page), m_pos(o.m_pos), m_pi(o.m_pi) {}
+
+				ComponentAllocator::iterator& CLOAK_CALL_THIS ComponentAllocator::iterator::operator=(In const iterator& o)
+				{
+					m_alloc = o.m_alloc;
+					m_page = o.m_page;
+					m_pos = o.m_pos;
+					m_pi = o.m_pi;
+					return *this;
+				}
+				ComponentAllocator::iterator& CLOAK_CALL_THIS ComponentAllocator::iterator::operator=(In iterator&& o)
+				{
+					m_alloc = o.m_alloc;
+					m_page = o.m_page;
+					m_pos = o.m_pos;
+					m_pi = o.m_pi;
+					return *this;
+				}
+
+				ComponentAllocator::iterator& CLOAK_CALL_THIS ComponentAllocator::iterator::operator+=(In difference_type n)
+				{
+					if (m_alloc != nullptr)
+					{
+						m_pos += n;
+						if (m_pos >= m_alloc->m_validSize)
+						{
+							m_pos = 0;
+							m_pi = 0;
+							m_alloc = nullptr;
+							m_page = nullptr;
+							return *this;
+						}
+						const size_t pi = m_pi + n;
+						const size_t p = pi / m_alloc->m_data.ComponentCount;
+						m_pi = pi % m_alloc->m_data.ComponentCount;
+						for (size_t a = 0; a < p; a++) { m_page = m_page->Next; }
+					}
+					return *this;
+				}
+				ComponentAllocator::iterator& CLOAK_CALL_THIS ComponentAllocator::iterator::operator++() { return operator+=(1); }
+				ComponentAllocator::iterator CLOAK_CALL_THIS ComponentAllocator::iterator::operator++(In int)
+				{
+					iterator r(*this);
+					operator+=(1);
+					return r;
+				}
+				ComponentAllocator::iterator CLOAK_CALL_THIS ComponentAllocator::iterator::operator+(In difference_type n) const { return iterator(*this) += n; }
+				ComponentAllocator::iterator CLOAK_CALL operator+(In ComponentAllocator::iterator::difference_type n, In const ComponentAllocator::iterator& o) { return ComponentAllocator::iterator(o) += n; }
+				inline ComponentAllocator::iterator::reference CLOAK_CALL_THIS ComponentAllocator::iterator::operator[](In difference_type n) const
+				{
+					if (m_page != nullptr)
+					{
+						CLOAK_ASSUME(m_alloc != nullptr);
+						const size_t pi = m_pi + n;
+						PageHeader* page = m_page;
+						const size_t p = pi / m_alloc->m_data.ComponentCount;
+						const size_t i = pi % m_alloc->m_data.ComponentCount;
+						for (size_t a = 0; a < p; a++) { page = page->Next; }
+						ComponentHeader* h = reinterpret_cast<ComponentHeader*>(Move(page, m_alloc->m_data.PageHeaderSize + (i * m_alloc->m_data.ComponentSize)));
+						return reference(h->Entity, Move(h, m_alloc->m_data.ComponentHeaderSize));
+					}
+					return reference(0, nullptr);
+				}
+				inline ComponentAllocator::iterator::reference CLOAK_CALL_THIS ComponentAllocator::iterator::operator*() const
+				{
+					if (m_page != nullptr)
+					{
+						CLOAK_ASSUME(m_alloc != nullptr);
+						ComponentHeader* h = reinterpret_cast<ComponentHeader*>(Move(m_page, m_alloc->m_data.PageHeaderSize + (m_pi * m_alloc->m_data.ComponentSize)));
+						return reference(h->Entity, Move(h, m_alloc->m_data.ComponentHeaderSize));
+					}
+					return reference(0, nullptr);
+				}
+
+				bool CLOAK_CALL_THIS ComponentAllocator::iterator::operator<(In const iterator& i) const { return m_pos < i.m_pos; }
+				bool CLOAK_CALL_THIS ComponentAllocator::iterator::operator<=(In const iterator& i) const { return m_pos <= i.m_pos; }
+				bool CLOAK_CALL_THIS ComponentAllocator::iterator::operator>(In const iterator& i) const { return m_pos > i.m_pos; }
+				bool CLOAK_CALL_THIS ComponentAllocator::iterator::operator>=(In const iterator& i) const { return m_pos >= i.m_pos; }
+				bool CLOAK_CALL_THIS ComponentAllocator::iterator::operator==(In const iterator& i) const { return m_pos == i.m_pos; }
+				bool CLOAK_CALL_THIS ComponentAllocator::iterator::operator!=(In const iterator& i) const { return m_pos != i.m_pos; }
+
+				inline ComponentAllocator::SearchResult CLOAK_CALL_THIS ComponentAllocator::FindComponent(In Entity_v2::EntityID id)
+				{
+					PageHeader* page = m_page;
+					size_t a = 0;
+					if (m_validSize > 0)
+					{
+						while (true)
+						{
+							CLOAK_ASSUME(page != nullptr);
+							if (page->HighestEntity >= id)
+							{
+								const size_t remaining = min(m_validSize - a, m_data.ComponentCount);
+								size_t lb = 0;
+								size_t hb = remaining;
+								while (lb != hb)
+								{
+									const size_t m = (lb + hb) >> 1;
+									const Entity_v2::EntityID mid = reinterpret_cast<ComponentHeader*>(Move(page, m_data.PageHeaderSize + (m * m_data.ComponentSize)))->Entity;
+									if (mid == id) { return SearchResult(true, m, m - a, page); }
+									else if (lb == m) { break; }
+									else if (mid < id) { lb = m; }
+									else { hb = m; }
+								}
+								return SearchResult(false, a, remaining, page);
+							}
+							a += m_data.ComponentCount;
+							if (a >= m_validSize) { return SearchResult(false, m_validSize, m_validSize % m_data.ComponentCount, page); }
+							page = page->Next.load(std::memory_order_relaxed);
+						}
+					}
+					return SearchResult(false, 0, 0, page);
+				}
+				inline ComponentAllocator::SearchResult CLOAK_CALL_THIS ComponentAllocator::FindComponentUnsorted(In Entity_v2::EntityID id)
+				{
+					SearchResult sr = FindComponent(id);
+					if (sr.Found == true) { return sr; }
+					const size_t size = m_size.load(std::memory_order_acquire);
+					size_t a = sr.GlobalIndex;
+					PageHeader* page = sr.Page;
+					if (size > m_validSize)
+					{
+						//Move to unsorted area:
+						while (a < m_validSize)
+						{
+							a += m_data.ComponentCount;
+							page = page->Next.load(std::memory_order_relaxed);
+						}
+						a = m_validSize;
+						size_t index = a % m_data.ComponentCount;
+						do {
+							const size_t remaining = min(size - a, m_data.ComponentCount - index);
+							ComponentHeader* h = reinterpret_cast<ComponentHeader*>(Move(page, m_data.PageHeaderSize + (index * m_data.ComponentSize)));
+							for (size_t b = 0; b < remaining; b++, h = reinterpret_cast<ComponentHeader*>(Move(h, m_data.ComponentSize)), index++)
+							{
+								if (h->Entity == id) { return SearchResult(true, a + b, index, page); }
+							}
+							a += remaining;
+							if (a >= size)
+							{
+								CLOAK_ASSUME(a == size && index == size % m_data.ComponentCount); //Sanity check
+								return SearchResult(false, a, index, page);
+							}
+							page = page->Next.load(std::memory_order_acquire);
+							index = 0;
+						} while (page != nullptr);
+					}
+					return SearchResult(false, 0, 0, page);
+				}
+				inline void CLOAK_CALL_THIS ComponentAllocator::RemoveAll()
+				{
+					const size_t size = m_size.load(std::memory_order_acquire);
+					PageHeader* page = m_page;
+					for (size_t a = 0; a < size; a += m_data.ComponentCount)
+					{
+						page->DeleteMask.store(~0Ui64, std::memory_order_release);
+						page = page->Next;
+					}
+				}
+				bool CLOAK_CALL_THIS ComponentAllocator::RequiresFix() const { return (m_toDelete.load(std::memory_order_consume) > 0 || m_validSize < m_size.load(std::memory_order_consume)) && m_ref.load(std::memory_order_consume) == 0; }
+				void CLOAK_CALL_THIS ComponentAllocator::RemoveDeprecatedLinks()
+				{
+					const size_t size = m_size.load(std::memory_order_acquire);
+					PageHeader* page = m_page;
+					for (size_t a = 0; a < size; a += m_data.ComponentCount)
+					{
+						uint64_t linkMask = page->LinkMask.load(std::memory_order_acquire);
+						uint8_t ni = 0;
+						while ((ni = API::Global::Math::bitScanForward(linkMask)) != 0xFF)
+						{
+							const uint64_t deleteMask = 1Ui64 << ni;
+							linkMask ^= deleteMask;
+							if (IsFlagSet(page->DeleteMask.load(std::memory_order_relaxed), deleteMask) == false)
+							{
+								ComponentHeader* h = reinterpret_cast<ComponentHeader*>(Move(page, m_data.PageHeaderSize + (ni * m_data.ComponentSize)));
+								ComponentLink* link = reinterpret_cast<ComponentLink*>(Move(h, m_data.ComponentHeaderSize));
+								ComponentAllocator* alloc = GetAllocator(link->Type);
+								if (alloc != nullptr)
+								{
+									const SearchResult sr = alloc->FindComponent(h->Entity);
+									if (sr.Found == false || IsFlagSet(sr.Page->DeleteMask.load(std::memory_order_acquire), 1Ui64 << sr.PageIndex))
+									{
+										page->DeleteMask.fetch_or(deleteMask);
+										m_toDelete.fetch_add(1, std::memory_order_relaxed);
+									}
+								}
+							}
+						}
+						page = page->Next.load(std::memory_order_acquire);
+					}
+				}
+				void CLOAK_CALL_THIS ComponentAllocator::Fix()
+				{
+					if (m_ref.load(std::memory_order_consume) == 0)
+					{
+						const size_t size = m_size.load(std::memory_order_acquire);
+						size_t validSize = m_validSize;
+						const size_t deleteCount = m_toDelete.load(std::memory_order_acquire);
+						CLOAK_ASSUME(size >= validSize);
+						CLOAK_ASSUME(size >= deleteCount);
+						const size_t finalSize = size - deleteCount;
+						//Let's see if there are some entries already sorted, which would speed up the following algorithm. Also when we're at it, let's
+						//call the destructors on any to-be-removed component or struct:
+						if (validSize < size || deleteCount > 0)
+						{
+							PageHeader* page = m_page;
+							Entity_v2::EntityID lID = 0;
+							bool growSortedArea = validSize < size;
+							for (size_t a = 0; a < size; a += m_data.ComponentCount)
+							{
+								const uint64_t delMask = page->DeleteMask.load(std::memory_order_relaxed);
+								if (growSortedArea == true)
+								{
+									if (a + m_data.ComponentCount <= validSize)
+									{
+										const uint8_t f = API::Global::Math::bitScanReverse(~delMask);
+										if (f != 0xFF && a + f < size)
+										{
+											ComponentHeader* h = reinterpret_cast<ComponentHeader*>(Move(page, m_data.PageHeaderSize + (f * m_data.ComponentSize)));
+											CLOAK_ASSUME(h->Entity >= lID);
+											lID = h->Entity;
+										}
+									}
+									else
+									{
+										uint8_t f = 0xFF;
+										uint64_t del = delMask;
+										while ((f = API::Global::Math::bitScanForward(~del)) != 0xFF && a + f < size)
+										{
+											del ^= 1Ui64 << f;
+											ComponentHeader* h = reinterpret_cast<ComponentHeader*>(Move(page, m_data.PageHeaderSize + (f * m_data.ComponentSize)));
+											if (lID <= h->Entity)
+											{
+												lID = h->Entity;
+												validSize = max(validSize, a + f);
+											}
+											else { growSortedArea = false; }
+										}
+									}
+								}
+								if (deleteCount > 0)
+								{
+									const uint64_t link = page->LinkMask.load(std::memory_order_relaxed);
+									uint8_t f = 0xFF;
+									uint64_t del = delMask;
+									while ((f = API::Global::Math::bitScanForward(del) != 0xFF && a + f < size))
+									{
+										const uint64_t mask = 1Ui64 << f;
+										del ^= mask;
+										ComponentHeader* h = reinterpret_cast<ComponentHeader*>(Move(page, m_data.PageHeaderSize + (f * m_data.ComponentSize)));
+										if (IsFlagSet(link, mask))
+										{
+											ComponentLink* l = reinterpret_cast<ComponentLink*>(Move(h, m_data.ComponentHeaderSize));
+											l->~ComponentLink();
+										}
+										else
+										{
+											API::World::Entity_v2::Component* c = reinterpret_cast<API::World::Entity_v2::Component*>(Move(h, m_data.ComponentHeaderSize + m_baseOffset));
+											c->~Component();
+										}
+										h->~ComponentHeader();
+									}
+								}
+								page = page->Next;
+							}
+						}
+
+						if (finalSize == 0)
+						{
+							m_page->HighestEntity = 0;
+							m_page->DeleteMask.store(0, std::memory_order_relaxed);
+							m_page->LinkMask.store(0, std::memory_order_relaxed);
+							//Free all other pages:
+							PageHeader* p = m_page->Next.exchange(nullptr, std::memory_order_relaxed);
+							while (p != nullptr)
+							{
+								PageHeader* n = p->Next;
+								p->~PageHeader();
+								API::Global::Memory::MemoryHeap::Free(p);
+								p = n;
+							}
+						}
+						else if (finalSize == 1)
+						{
+							//There's only one entry to keep, so we can skip any sorting right away
+							PageHeader* page = m_page;
+							for (size_t a = 0; a < size; a += m_data.ComponentCount)
+							{
+								const uint64_t del = page->DeleteMask.load(std::memory_order_acquire);
+								const uint8_t f = API::Global::Math::bitScanForward(~del);
+								if (f != 0xFF)
+								{
+									CLOAK_ASSUME(a + f < size);//If this failes, we got the deleteCount wrong!
+									ComponentHeader* src = reinterpret_cast<ComponentHeader*>(Move(page, m_data.PageHeaderSize + (f * m_data.ComponentSize)));
+									m_page->HighestEntity = src->Entity;
+									m_page->LinkMask.store(IsFlagSet(page->LinkMask.load(std::memory_order_relaxed), 1Ui64 << f) ? 1 : 0, std::memory_order_relaxed);
+									m_page->DeleteMask.store(0, std::memory_order_relaxed);
+									if (a > 0 || f > 0)
+									{
+										void* dst = Move(m_page, m_data.PageHeaderSize);
+										memcpy(dst, src, m_data.ComponentSize);
+									}
+									break;
+								}
+								page = page->Next;
+							}
+							//Free all other pages:
+							page = m_page->Next.exchange(nullptr, std::memory_order_relaxed);
+							while (page != nullptr)
+							{
+								PageHeader* n = page->Next;
+								page->~PageHeader();
+								API::Global::Memory::MemoryHeap::Free(page);
+								page = n;
+							}
+						}
+						else if (validSize < size)
+						{
+							//There are new entries, which are not yet sorted, so we need to sort all entries.
+							//First, find all valid components that require sorting:
+							SortData* data = reinterpret_cast<SortData*>(API::Global::Memory::MemoryLocal::Allocate(sizeof(SortData) * finalSize * 2));
+							SortData* sorted[2] = { &data[0], &data[finalSize] };
+							PageHeader* page = m_page;
+							Entity_v2::EntityID maxEID = 0;
+							Entity_v2::EntityID minEID = ~0;
+							for (size_t a = 0, c = 0; a < size; a += m_data.ComponentCount)
+							{
+								const size_t m = min(size - a, m_data.ComponentCount);
+								const uint64_t del = page->DeleteMask.load(std::memory_order_acquire);
+								const uint64_t links = page->LinkMask.load(std::memory_order_acquire);
+								for (size_t b = 0; b < m; b++)
+								{
+									const uint64_t mask = 1Ui64 << b;
+									if (IsFlagSet(del, mask) == false)
+									{
+										ComponentHeader* h = reinterpret_cast<ComponentHeader*>(Move(page, m_data.PageHeaderSize + (b * m_data.ComponentSize)));
+										::new(&sorted[0][c])SortData();
+										sorted[0][c].Page = page;
+										sorted[0][c].PageIndex = b;
+										sorted[0][c].IsLink = IsFlagSet(links, mask);
+										sorted[0][c].Entity = h->Entity;
+										maxEID = max(maxEID, h->Entity);
+										minEID = min(minEID, h->Entity);
+										c++;
+									}
+								}
+								page = page->Next;
+								CLOAK_ASSUME((a + m_data.ComponentCount >= size) == (c == finalSize)); //If this failes, we got the deleteCount wrong!
+							}
+							CLOAK_ASSUME(maxEID > minEID); //sanity check
+							//Sorting using RADIX sort:
+							uint32_t counting[16];
+							const size_t iterations = API::Global::Math::bitScanReverse(maxEID - minEID) + 1;
+							for (size_t a = 0; a < finalSize; a++) { sorted[0][a].Entity -= minEID; }
+							for (size_t a = 0; a < iterations; a += 4)
+							{
+								memset(counting, 0, sizeof(uint32_t) * ARRAYSIZE(counting));
+								for (size_t b = 0; b < finalSize; b++) { counting[(sorted[0][b].Entity >> a) & 0xF]++; }
+								for (size_t b = 1; b < ARRAYSIZE(counting); b++) { counting[b] += counting[b - 1]; }
+								for (size_t b = finalSize; b > 0; b--)
+								{
+									const uint32_t p = (sorted[0][b - 1].Entity >> a) & 0xF;
+									sorted[1][--counting[p]] = sorted[0][b - 1];
+								}
+								std::swap(sorted[0], sorted[1]);
+							}
+							for (size_t a = 0; a < finalSize; a++) { sorted[0][a].Entity += minEID; }
+							//Mark "empty" parts of a page as deleted for following algorithm:
+							page = m_page;
+							for (size_t a = 0; a < size; a += m_data.ComponentCount)
+							{
+								const size_t m = min(size - a, m_data.ComponentCount);
+								if (m < 64) { page->DeleteMask.fetch_or((~0Ui64) << m, std::memory_order_acq_rel); }
+								page = page->Next;
+							}
+							//Copy data:
+							PageHeader* fop = nullptr;
+							PageHeader* lop = nullptr;
+							PageHeader* fnp = nullptr;
+							PageHeader* lnp = nullptr;
+							page = m_page;
+							size_t wp = 0;
+							size_t rp = 0;
+							const size_t validPageSize = validSize - (validSize % m_data.ComponentCount);
+							for (; rp < size; wp += m_data.ComponentCount)
+							{
+								CLOAK_ASSUME(page != nullptr);
+								PageHeader* next = page->Next;
+								rp += m_data.ComponentCount;
+								const size_t nm = wp < finalSize ? min(finalSize - wp, m_data.ComponentCount) : 0;
+								size_t wip = 0;
+								uint64_t del = page->DeleteMask.load(std::memory_order_acquire);
+								CLOAK_ASSUME(nm != 0 || del == ~0Ui64);
+								uint8_t p = 0;
+								bool foundOne = false;
+								while ((p = API::Global::Math::bitScanForward(~del)) != 0xFF)
+								{
+									del ^= 1Ui64 << p;
+									ComponentHeader* h = reinterpret_cast<ComponentHeader*>(Move(page, m_data.PageHeaderSize + (p * m_data.ComponentSize)));
+									if (rp < validPageSize)
+									{
+										//We are evaluating an already sorted page, so we can run over the sorted array in parallel -> O(n)
+										for (size_t b = wip; b < nm; b++)
+										{
+											wip++;
+											if (sorted[0][wp + b].Entity == h->Entity) { goto component_found; }
+										}
+									}
+									else
+									{
+										//We are evaluating an unsorted page, so we need to search the whole area within the sorted array -> O(n²)
+										for (size_t b = 0; b < nm; b++)
+										{
+											if (sorted[0][wp + b].Entity == h->Entity) { goto component_found; }
+										}
+									}
+									//Page can not be reused, as there is at least one component that needs to be moved to a later page. So create a new page!
+									PageHeader* np = nullptr;
+									//First, check if we can use an older page:
+									PageHeader* op = fop;
+									PageHeader* lp = nullptr;
+									while (op != nullptr)
+									{
+										if (op->DeleteMask.load(std::memory_order_acquire) == ~0Ui64)
+										{
+											np = op;
+											PageHeader* lpn = op->Next.load(std::memory_order_acquire);
+											if (lp != nullptr) { lp->Next = lpn; }
+											else { fop = lpn; }
+											if (lpn == nullptr) { lop = lp; }
+											goto copy_to_new_page;
+										}
+										lp = op;
+										op = op->Next;
+									}
+									np = ::new(API::Global::Memory::MemoryHeap::Allocate(m_data.PageSize))PageHeader();
+								copy_to_new_page:
+									uint64_t nlink = 0;
+									for (size_t b = 0; b < nm; b++)
+									{
+										const SortData& s = sorted[0][b + wp];
+										if (s.IsLink == true) { nlink |= 1Ui64 << b; }
+										void* src = Move(s.Page, m_data.PageSize + (s.PageIndex * m_data.ComponentSize));
+										void* dst = Move(np, m_data.PageSize + (b * m_data.ComponentSize));
+										memcpy(dst, src, m_data.ComponentSize);
+										s.Page->DeleteMask.fetch_or(1Ui64 << s.PageIndex, std::memory_order_acq_rel);
+									}
+
+									//Add new page to list of new pages:
+									np->HighestEntity = reinterpret_cast<ComponentHeader*>(Move(page, m_data.PageSize + ((nm - 1) * m_data.ComponentSize)))->Entity;
+									np->LinkMask = nlink;
+									np->DeleteMask = 0;
+									np->Next = nullptr;
+									if (lnp == nullptr) { fnp = np; }
+									else { lnp->Next = np; }
+									lnp = np;
+									if (foundOne == true)
+									{
+										//Add old page to list of old pages:
+										if (lop == nullptr) { fop = page; }
+										else { lop->Next = page; }
+										lop = page;
+										page->Next = nullptr;
+									}
+									else
+									{
+										//Page hasn't been used at all yet, so it may be used in the next iteration
+										next = page;
+										rp -= m_data.ComponentCount;
+									}
+									goto next_page;
+								component_found:
+									foundOne = true;
+								}
+								uint64_t nlink = 0;
+								//First move to tmp page:
+								if (nm > 0)
+								{
+									void* tmpPage = nullptr;
+									if (page->DeleteMask.load(std::memory_order_acquire) != ~0Ui64)
+									{
+										tmpPage = API::Global::Memory::MemoryLocal::Allocate(m_data.PageSize - m_data.PageHeaderSize);
+										memcpy(tmpPage, Move(page, m_data.PageHeaderSize), m_data.PageSize - m_data.PageHeaderSize);
+									}
+									//Then copy:
+									for (size_t b = 0; b < nm; b++)
+									{
+										const SortData& s = sorted[0][b + wp];
+										if (s.IsLink == true) { nlink |= 1Ui64 << b; }
+										void* src = nullptr;
+										void* dst = Move(page, m_data.PageHeaderSize + (b * m_data.ComponentSize));
+										if (s.Page == page)
+										{
+											src = Move(tmpPage, s.PageIndex * m_data.ComponentSize);
+										}
+										else
+										{
+											src = Move(s.Page, m_data.PageHeaderSize + (s.PageIndex * m_data.ComponentSize));
+											s.Page->DeleteMask.fetch_or(1Ui64 << s.PageIndex, std::memory_order_acq_rel);
+										}
+										memcpy(dst, src, m_data.ComponentSize);
+									}
+									API::Global::Memory::MemoryLocal::Free(tmpPage);
+
+									//Add page to list of new pages:
+									page->HighestEntity = reinterpret_cast<ComponentHeader*>(Move(page, m_data.PageSize + ((nm - 1) * m_data.ComponentSize)))->Entity;
+									page->LinkMask = nlink;
+									page->DeleteMask = 0;
+									page->Next = nullptr;
+									if (lnp == nullptr) { fnp = page; }
+									else { lnp->Next = page; }
+									lnp = page;
+								}
+								else
+								{
+									//Page is not required, let's add it to the list of old pages
+									if (lop == nullptr) { fop = page; }
+									else { lop->Next = page; }
+									lop = page;
+									page->Next = nullptr;
+								}
+							next_page:
+								page = next;
+							}
+
+							//Free old pages:
+							if (page != nullptr)
+							{
+								if (lop == nullptr) { fop = page; }
+								else { lop->Next = page; }
+							}
+							while (fop != nullptr)
+							{
+								PageHeader* n = fop->Next;
+								fop->~PageHeader();
+								API::Global::Memory::MemoryHeap::Free(fop);
+								fop = n;
+							}
+							m_page = fnp;
+							API::Global::Memory::MemoryLocal::Free(data);
+						}
+						else
+						{
+							//We just need to remove deleted entries, no sorting is required. Therefore, it is save to do this inline:
+							PageHeader* readPage = m_page;
+							PageHeader* writePage = m_page;
+							for (size_t read = 0, write = 0; read < size;)
+							{
+								CLOAK_ASSUME(write < finalSize);
+								const size_t m = min(finalSize - write, m_data.ComponentCount);
+								uint64_t nlink = 0;
+								Entity_v2::EntityID mEID = 0;
+								for (size_t wi = 0; wi < m; wi++, read++)
+								{
+									uint64_t del = readPage->DeleteMask.load(std::memory_order_acquire);
+									uint64_t ri = read % m_data.ComponentCount;
+									while (IsFlagSet(del, 1Ui64 << ri))
+									{
+										read++;
+										ri++;
+										if (ri == m_data.ComponentCount)
+										{
+											readPage = readPage->Next;
+											del = readPage->DeleteMask.load(std::memory_order_acquire);
+											ri = 0;
+										}
+									}
+									CLOAK_ASSUME(read <= write + wi);
+									CLOAK_ASSUME(read < size);
+									if (IsFlagSet(readPage->LinkMask.load(std::memory_order_acquire), 1Ui64 << ri)) { nlink |= 1Ui64 << wi; }
+									void* src = Move(readPage, m_data.PageHeaderSize + (ri * m_data.ComponentSize));
+									if (wi + 1 == m) { mEID = reinterpret_cast<ComponentHeader*>(src)->Entity; }
+									if (read != write + wi)
+									{
+										void* dst = Move(writePage, m_data.PageHeaderSize + (wi * m_data.ComponentSize));
+										memcpy(dst, src, m_data.ComponentSize);
+									}
+								}
+								writePage->LinkMask.store(nlink, std::memory_order_release);
+								writePage->DeleteMask.store(0, std::memory_order_release);
+								writePage->HighestEntity = mEID;
+								writePage = writePage->Next;
+								write += m;
+								CLOAK_ASSUME((read == size) == (write == finalSize)); //If this failes, we got the deleteCount wrong!
+							}
+							//Delete all other pages:
+							if (writePage != nullptr)
+							{
+								writePage = writePage->Next.exchange(nullptr, std::memory_order_release);
+								while (writePage != nullptr)
+								{
+									PageHeader* n = writePage->Next;
+									writePage->~PageHeader();
+									API::Global::Memory::MemoryHeap::Free(writePage);
+									writePage = n;
+								}
+							}
+						}
+						m_validSize = finalSize;
+						m_toDelete.store(0, std::memory_order_release);
+						m_size.store(finalSize, std::memory_order_release);
+#ifdef _DEBUG
+						//Final check to see if everything worked out:
+						{
+							PageHeader* page = m_page;
+							Entity_v2::EntityID lid = 0;
+							for (size_t a = 0; a < finalSize; a += m_data.ComponentCount)
+							{
+								CLOAK_ASSUME(page != nullptr);
+								CLOAK_ASSUME(page->DeleteMask.load(std::memory_order_acquire) == 0);
+								const size_t rem = min(finalSize - a, m_data.ComponentCount);
+								for (size_t b = 0; b < rem; b++)
+								{
+									ComponentHeader* h = reinterpret_cast<ComponentHeader*>(Move(page, m_data.PageHeaderSize + (b * m_data.ComponentSize)));
+									CLOAK_ASSUME((a == 0 && b == 0 && lid == h->Entity) || lid < h->Entity);
+									lid = h->Entity;
+								}
+								page = page->Next;
+							}
+						}
+#endif
+					}
+				}
+
+				CLOAK_CALL ComponentAllocator::ComponentAllocator(In const type_name& name, In size_t size, In size_t alignment, In size_t offsetToBase) : m_type(name), m_baseOffset(offsetToBase), m_data(size, alignment)
+				{
+					m_ref = 0;
+					m_size = 0;
+					m_validSize = 0;
+					m_toDelete = 0;
+					m_page = ::new(API::Global::Memory::MemoryHeap::Allocate(m_data.PageSize))PageHeader();
+				}
+				CLOAK_CALL ComponentAllocator::~ComponentAllocator()
+				{
+					PageHeader* page = m_page;
+					size_t p = 0;
+					const size_t s = m_size.load(std::memory_order_consume);
+					do {
+						PageHeader* np = page->Next;
+						const size_t size = min(m_data.ComponentCount, s > p ? s - p : 0);
+						ComponentHeader* h = reinterpret_cast<ComponentHeader*>(Move(np, m_data.PageHeaderSize));
+						for (size_t a = 0; a < size; a++)
+						{
+							if (IsFlagSet(np->LinkMask.load(std::memory_order_consume), 1Ui64 << a))
+							{
+								ComponentLink* l = reinterpret_cast<ComponentLink*>(Move(h, m_data.ComponentHeaderSize));
+								l->~ComponentLink();
+							}
+							else
+							{
+								API::World::Entity_v2::Component* c = reinterpret_cast<API::World::Entity_v2::Component*>(Move(h, m_data.ComponentHeaderSize + m_baseOffset));
+								c->~Component();
+							}
+							h->~ComponentHeader();
+							h = reinterpret_cast<ComponentHeader*>(Move(h, m_data.ComponentSize));
+						}
+						np->~PageHeader();
+						API::Global::Memory::MemoryHeap::Free(np);
+						page = np;
+						p += m_data.ComponentCount;
+					} while (page != nullptr);
+				}
+				void* CLOAK_CALL_THIS ComponentAllocator::AllocateComponentLink(In Entity_v2::EntityID id, In const type_name& realType, In size_t offset)
+				{
+					if (g_blockAdd.load(std::memory_order_relaxed) == true) { return nullptr; }
+					PageHeader* page = m_page;
+					PageHeader* lp = nullptr;
+					void* np = nullptr;
+					const size_t size = m_size.fetch_add(1, std::memory_order_acq_rel);
+					const size_t index = size % m_data.ComponentCount;
+					for (size_t a = m_data.ComponentCount; a <= size; a += m_data.ComponentCount)
+					{
+						lp = page;
+						page = page->Next.load(std::memory_order_acquire);
+						if (page == nullptr)
+						{
+							if (np == nullptr) { np = API::Global::Memory::MemoryHeap::Allocate(m_data.PageSize); }
+							page = ::new(np)PageHeader();
+							PageHeader* ep = nullptr;
+							if (lp->Next.compare_exchange_strong(ep, page, std::memory_order_acq_rel) == true) { np = nullptr; }
+							else
+							{
+								page->~PageHeader();
+								page = ep;
+							}
+						}
+					}
+					if (np != nullptr) { API::Global::Memory::MemoryHeap::Free(np); }
+					ComponentHeader* h = reinterpret_cast<ComponentHeader*>(Move(page, m_data.PageHeaderSize + (index * m_data.ComponentSize)));
+					h = ::new(h)ComponentHeader(id);
+					void* res = Move(h, m_data.ComponentHeaderSize);
+					if (realType != m_type)
+					{
+						page->LinkMask.fetch_or(1Ui64 << index, std::memory_order_relaxed);
+						ComponentLink* link = reinterpret_cast<ComponentLink*>(res);
+						link = ::new(link)ComponentLink(realType, offset);
+					}
+					return res;
+				}
+				void* CLOAK_CALL_THIS ComponentAllocator::AllocateComponent(In Entity_v2::EntityID id) { return AllocateComponentLink(id, m_type, 0); }
+				void CLOAK_CALL_THIS ComponentAllocator::RemoveComponent(In Entity_v2::EntityID id)
+				{
+					const SearchResult sr = FindComponentUnsorted(id);
+					if (sr.Found == false) { return; }
+					const uint64_t mask = 1Ui64 << sr.PageIndex;
+					if (IsFlagSet(sr.Page->DeleteMask.fetch_or(mask, std::memory_order_relaxed), mask) == false) { m_toDelete.fetch_add(1, std::memory_order_relaxed); }
+					if (IsFlagSet(sr.Page->LinkMask.load(std::memory_order_relaxed), mask))
+					{
+						ComponentLink* l = reinterpret_cast<ComponentLink*>(Move(sr.Page, m_data.PageHeaderSize + (sr.PageIndex * m_data.ComponentSize) + m_data.ComponentHeaderSize));
+						ComponentAllocator* alloc = GetAllocator(l->Type);
+						if (alloc != nullptr) { alloc->RemoveComponent(id); }
+					}
+				}
+				void* CLOAK_CALL_THIS ComponentAllocator::GetComponent(In Entity_v2::EntityID id)
+				{
+					const SearchResult sr = FindComponentUnsorted(id);
+					if (sr.Found == true)
+					{
+						void* res = Move(sr.Page, m_data.PageHeaderSize + (sr.PageIndex * m_data.ComponentSize) + m_data.ComponentHeaderSize);
+						const uint64_t mask = 1Ui64 << sr.PageIndex;
+						if (IsFlagSet(sr.Page->LinkMask.load(std::memory_order_relaxed), mask))
+						{
+							ComponentLink* link = reinterpret_cast<ComponentLink*>(res);
+							ComponentAllocator* o = GetAllocator(link->Type);
+							if (o != nullptr)
+							{
+								void* nc = o->GetComponent(id);
+								if (nc != nullptr) { return Move(nc, link->Offset); }
+							}
+							if (IsFlagSet(sr.Page->DeleteMask.fetch_or(mask, std::memory_order_relaxed), mask) == false) { m_toDelete.fetch_add(1, std::memory_order_relaxed); }
+							return nullptr;
+						}
+						return res;
+					}
+					return nullptr;
+				}
+
+				const type_name& CLOAK_CALL_THIS ComponentAllocator::GetTypeName() const { return m_type; }
+
+				void CLOAK_CALL_THIS ComponentAllocator::AddRef() { m_ref.fetch_add(1, std::memory_order_acq_rel); }
+				void CLOAK_CALL_THIS ComponentAllocator::Release() { m_ref.fetch_sub(1, std::memory_order_acq_rel); }
+
+				ComponentAllocator::iterator CLOAK_CALL_THIS ComponentAllocator::begin() const { return iterator(this, m_page, 0); }
+				ComponentAllocator::iterator CLOAK_CALL_THIS ComponentAllocator::cbegin() const { return iterator(this, m_page, 0); }
+				ComponentAllocator::iterator CLOAK_CALL_THIS ComponentAllocator::end() const { return iterator(); }
+				ComponentAllocator::iterator CLOAK_CALL_THIS ComponentAllocator::cend() const { return iterator(); }
+
+				void* CLOAK_CALL ComponentAllocator::operator new(In size_t size) { return API::Global::Memory::MemoryHeap::Allocate(size); }
+				void CLOAK_CALL ComponentAllocator::operator delete(In void* ptr) { API::Global::Memory::MemoryHeap::Free(ptr); }
+			}
 		}
 	}
 	CLOAKENGINE_API_NAMESPACE namespace API {
@@ -667,7 +1757,7 @@ namespace CloakEngine {
 					order[p.second] = a;
 				}
 
-				API::Helper::Lock lock(Impl::World::ComponentManager::g_syncCache);
+				API::Helper::ReadLock rlock(Impl::World::ComponentManager::g_syncCache);
 				CLOAK_ASSUME(Impl::World::ComponentManager::g_syncCache != nullptr);
 				if (Impl::World::ComponentManager::g_cache->size() > 0)
 				{
@@ -681,9 +1771,17 @@ namespace CloakEngine {
 					}
 				}
 				Impl::World::ComponentManager::Cache* res = new Impl::World::ComponentManager::Cache(mask, size, guids, order);
+
+				API::Helper::WriteLock wlock(Impl::World::ComponentManager::g_syncCache);
 				Impl::World::ComponentManager::g_cache->insert({ res });
 				res->AddRef();
 				return res;
+			}
+			namespace ComponentManager_v2 {
+				CLOAKENGINE_API CE::RefPointer<IComponentCache> CLOAK_CALL ComponentManager::RequestCache(In size_t count, In_reads(count) const type_name* ids)
+				{
+					return Impl::World::ComponentManager_v2::ComponentCache::CreateCache(count, ids);
+				}
 			}
 		}
 	}	

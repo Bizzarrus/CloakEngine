@@ -637,10 +637,10 @@ namespace CloakEngine {
 					DXGI_MODE_DESC CLOAK_CALL CastForward(In const Impl::Rendering::SWAPCHAIN_MODE& api)
 					{
 						DXGI_MODE_DESC res;
-						res.Format = CastForward(api.Format);
+						res.Format = DXGI_FORMAT_UNKNOWN;
 						res.Height = api.Height;
-						res.RefreshRate.Denominator = api.RefreshRate.Denominator;
-						res.RefreshRate.Numerator = api.RefreshRate.Numerator;
+						res.RefreshRate.Denominator = 0;
+						res.RefreshRate.Numerator = 0;
 						res.Width = api.Width;
 						res.ScanlineOrdering = CastForward(api.ScanlineOrdering);
 						res.Scaling = CastForward(api.Scaling);

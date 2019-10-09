@@ -14,342 +14,703 @@
 namespace CloakEngine {
 	namespace Engine {
 		namespace FileLoader {
-			constexpr size_t PRIORITY_COUNT = 4;
-			//Background-loading priority is hidden, as it is controled by the system automaticly
-			//	Ressources with the priority BACKGROUND will be delayed-loaded if they are not yet fully loaded and there's nothing other to load
-			constexpr API::Files::Priority PRIORITY_BACKGROUND = static_cast<API::Files::Priority>(0);
-			//Maxmimum of time to spend pushing things to the loading pool
-			constexpr API::Global::Time MAX_UPDATE_TIME = 50;
+			namespace FileLoader_v2 {
+				constexpr size_t PRIORITY_COUNT = 4;
+				//Background-loading priority is hidden, as it is controled by the system automaticly
+				//	Ressources with the priority BACKGROUND will be delayed-loaded if they are not yet fully loaded and there's nothing other to load
+				constexpr API::Files::Priority PRIORITY_BACKGROUND = static_cast<API::Files::Priority>(0);
+				constexpr LoadState DEFAULT_STATE = { LoadType::NONE, PRIORITY_BACKGROUND };
+				constexpr LoadState PROCESSING_STATE = { LoadType::PROCESSING, PRIORITY_BACKGROUND };
+				// If we requested an action but request another action before the first one is executed, this table decides what action
+				//	will actuall be executed
+				constexpr LoadType QUEUE_TRANSITION[6][6] = {
+					//					NONE				LOAD				UNLOAD				RELOAD				DELAYED				PROCESSING
+					/*	NONE	*/	{	LoadType::NONE,		LoadType::LOAD,		LoadType::UNLOAD,	LoadType::RELOAD,	LoadType::DELAYED,	LoadType::NONE	},
+					/*	LOAD	*/	{	LoadType::NONE,		LoadType::LOAD,		LoadType::NONE,		LoadType::RELOAD,	LoadType::DELAYED,	LoadType::LOAD	},
+					/*	UNLOAD	*/	{	LoadType::NONE,		LoadType::RELOAD,	LoadType::UNLOAD,	LoadType::RELOAD,	LoadType::UNLOAD,	LoadType::UNLOAD	},
+					/*	RELOAD	*/	{	LoadType::NONE,		LoadType::RELOAD,	LoadType::UNLOAD,	LoadType::RELOAD,	LoadType::RELOAD,	LoadType::RELOAD	},
+					/*	DELAYED	*/	{	LoadType::NONE,		LoadType::DELAYED,	LoadType::UNLOAD,	LoadType::RELOAD,	LoadType::DELAYED,	LoadType::DELAYED	},
+					/*	PROCESSING*/{	LoadType::NONE,		LoadType::LOAD,		LoadType::UNLOAD,	LoadType::RELOAD,	LoadType::DELAYED,	LoadType::PROCESSING	},
+				};
 
-			std::atomic<unsigned int> g_lastUpdatedPriority = 0;
-
-			inline void CLOAK_CALL IncreaseLoadCount(In unsigned int p);
-			inline void CLOAK_CALL IncreaseLoadCount(In API::Files::Priority p);
-			inline void CLOAK_CALL DecreaseLoadCount(In unsigned int p);
-			inline void CLOAK_CALL DecreaseLoadCount(In API::Files::Priority p);
-
-			API::Helper::ISyncSection* g_sync[PRIORITY_COUNT] = { nullptr,nullptr,nullptr,nullptr };
-			API::Helper::ISyncSection* g_syncSet = nullptr;
-			LinkedList<ILoad*>* g_loads;
-			LinkedList<loadInfo>* g_toLoad[PRIORITY_COUNT];
-			std::atomic<int64_t> g_loadCount[PRIORITY_COUNT] = { 0,0,0,0 };
-			std::atomic<bool> g_checkedLC = false;
-			std::atomic<bool> g_isLoading[PRIORITY_COUNT] = { false,false,false,false };
-			std::atomic<uint64_t> g_remainLoad = 0;
-
-			inline void CLOAK_CALL loadFindJob()
-			{
-				const uint64_t opCount = g_remainLoad.exchange(0);
-				CloakDebugLog("Loading " + std::to_string(opCount) + " objects");
-				if (opCount > 0)
+				template<typename A> inline void* CLOAK_CALL Align(In void* ptr, In_opt size_t offset = 0)
 				{
-					uint64_t p = 0;
-					for (size_t a = PRIORITY_COUNT; a > 0; a--)
-					{
-						API::Helper::Lock lock(g_sync[a - 1]);
-						if (g_toLoad[a - 1]->size() > 0)
+					constexpr size_t ALIGNMENT = std::alignment_of<A>::value;
+					uintptr_t p = reinterpret_cast<uintptr_t>(ptr) + offset;
+					return reinterpret_cast<void*>(p + ((ALIGNMENT - (p % ALIGNMENT)) % ALIGNMENT));
+				}
+
+				//Simple wait-free multi-producer-single-consumer queue, based on moodycamel's lock-free single-producer-single-consumer queue:
+				//	http://moodycamel.com/blog/2013/a-fast-lock-free-queue-for-c++
+				template<typename T, size_t BlockSize = 512> class LoadingQueue {
+					public:
+						typedef T value_type;
+					private:
+						static constexpr size_t CACHE_LINE_SIZE = 64;
+						static constexpr size_t BLOCK_SIZE = API::Global::Math::CompileTime::CeilPower2(max(BlockSize, 2));
+
+						struct Block {
+							public:
+								struct {
+									std::atomic<size_t> Head = 0;
+									size_t LocalTail = 0;
+								} Dequeue;
+								uint8_t _cachelinePadding0[CACHE_LINE_SIZE - sizeof(Dequeue)];
+								struct {
+									std::atomic<size_t> Tail = 0;
+									size_t LocalHead = 0;
+								} Enqueue;
+								uint8_t _cachelinePadding1[CACHE_LINE_SIZE - sizeof(Enqueue)];
+								std::atomic<Block*> Next;
+								void* const Data;
+								const size_t SizeMask;
+								void* const RawThis;
+								CLOAK_CALL Block(In const size_t& size, void* rawPtr, void* data) : SizeMask(size - 1), RawThis(rawPtr), Next(nullptr), Data(data)
+								{
+									Dequeue.Head = 0;
+									Dequeue.LocalTail = 0;
+									Enqueue.Tail = 0;
+									Enqueue.LocalHead = 0;
+								}
+								T* CLOAK_CALL_THIS At(In size_t i) { return reinterpret_cast<T*>(reinterpret_cast<uintptr_t>(Data) + (i * sizeof(T))); }
+								const T* CLOAK_CALL_THIS At(In size_t i) const { return reinterpret_cast<T*>(reinterpret_cast<uintptr_t>(Data) + (i * sizeof(T))); }
+							private:
+								Block& CLOAK_CALL_THIS operator=(In const Block&) { return *this; }
+						};
+						class Producer {
+							private:
+								static constexpr size_t BASE_BLOCK_SIZE = sizeof(Block) + std::alignment_of<Block>::value + std::alignment_of<T>::value - 2;
+
+								static Block* CLOAK_CALL CreateBlock(In size_t capacity)
+								{
+									const size_t size = BASE_BLOCK_SIZE + (sizeof(T) * capacity);
+									void* nb = API::Global::Memory::MemoryHeap::Allocate(size);
+									if (nb == nullptr) { return nullptr; }
+
+									void* nba = Align<Block>(nb);
+									void* nbd = Align<T>(nba, sizeof(Block));
+									return ::new(nba)Block(capacity, nb, nbd);
+								}
+
+								std::atomic<Block*> m_head;
+								uint8_t _cachelinePadding0[CACHE_LINE_SIZE - sizeof(m_head)];
+								std::atomic<Block*> m_tail;
+
+								size_t m_largestBlockSize;
+							public:
+								std::atomic<Producer*> Next;
+
+								explicit CLOAK_CALL Producer(In_opt size_t size = 512) : Next(this)
+								{
+									CLOAK_ASSUME(size > 0);
+									Block* start = nullptr;
+									m_largestBlockSize = API::Global::Math::CeilPower2(size + 1);
+									if (m_largestBlockSize > BLOCK_SIZE * 2)
+									{
+										const size_t bc = (size + BLOCK_SIZE * 2 - 3) / (BLOCK_SIZE - 1);
+										m_largestBlockSize = BLOCK_SIZE;
+										Block* end = nullptr;
+										for (size_t a = 0; a < bc; a++)
+										{
+											Block* b = CreateBlock(m_largestBlockSize);
+											if (b == nullptr) { throw std::bad_alloc(); }
+											if (start == nullptr) { start = b; }
+											else { end->Next = b; }
+											end = b;
+											end->Next = start;
+										}
+									}
+									else
+									{
+										start = CreateBlock(m_largestBlockSize);
+										if (start == nullptr) { throw std::bad_alloc(); }
+										start->Next = start;
+									}
+									m_head = start;
+									m_tail = start;
+									std::atomic_thread_fence(std::memory_order_seq_cst);
+								}
+								CLOAK_CALL ~Producer()
+								{
+									std::atomic_thread_fence(std::memory_order_seq_cst);
+									Block* start = m_head;
+									Block* b = start;
+									do {
+										Block* nb = b->Next;
+										size_t head = b->Dequeue.Head;
+										size_t tail = b->Enqueue.Tail;
+
+										for (size_t a = head; a != tail; a = (a + 1) & b->SizeMask)
+										{
+											T* e = b->At(a);
+											e->~T();
+											(void)e;
+										}
+
+										void* rb = b->RawThis;
+										b->~Block();
+										API::Global::Memory::MemoryHeap::Free(rb);
+										b = nb;
+									} while (b != start);
+								}
+								template<typename U> bool CLOAK_CALL_THIS try_dequeue(Inout U& result)
+								{
+									Block* block = m_head.load();
+									size_t tail = block->Dequeue.LocalTail;
+									size_t head = block->Dequeue.Head.load();
+
+									if (head != tail || head != (block->Dequeue.LocalTail = block->Enqueue.Tail.load()))
+									{ 
+										std::atomic_thread_fence(std::memory_order_acquire); 
+									non_empty_block:
+										T* e = block->At(head);
+										result = std::move(*e);
+										e->~T();
+
+										head = (head + 1) & block->SizeMask;
+										std::atomic_thread_fence(std::memory_order_release);
+										block->Dequeue.Head = head;
+									}
+									else if (block != m_tail.load())
+									{
+										std::atomic_thread_fence(std::memory_order_acquire);
+
+										block = m_head.load();
+										tail = block->Dequeue.LocalTail = block->Enqueue.Tail.load();
+										head = block->Dequeue.Head.load();
+										std::atomic_thread_fence(std::memory_order_acquire);
+
+										if (head != tail) { goto non_empty_block; }
+
+										Block* nb = block->Next;
+										size_t nHead = nb->Dequeue.Head.load();
+										size_t nTail = nb->Dequeue.LocalTail = nb->Enqueue.Tail.load();
+										std::atomic_thread_fence(std::memory_order_acquire);
+
+										CLOAK_ASSUME(nHead != nTail);
+										(void)nTail;
+
+										std::atomic_thread_fence(std::memory_order_release);
+										m_head = block = nb;
+
+										std::atomic_signal_fence(std::memory_order_release);
+
+										T* e = block->At(nHead);
+										result = std::move(*e);
+										e->~T();
+
+										nHead = (nHead + 1) & block->SizeMask;
+										std::atomic_thread_fence(std::memory_order_release);
+										block->Dequeue.Head = nHead;
+									}
+									else { return false; }
+									return true;
+								}
+								template<typename... Args> void CLOAK_CALL_THIS enqueue(In Args&&... args)
+								{
+									Block* block = m_tail.load();
+									size_t head = block->Enqueue.LocalHead;
+									size_t tail = block->Enqueue.Tail.load();
+
+									size_t nTail = (tail + 1) & block->SizeMask;
+									if (nTail != head || nTail != (block->Enqueue.LocalHead = block->Dequeue.Head.load()))
+									{
+										std::atomic_thread_fence(std::memory_order_acquire);
+										T* e = block->At(tail);
+										::new(e)T(std::forward<Args>(args)...);
+										std::atomic_thread_fence(std::memory_order_release);
+										block->Enqueue.Tail = nTail;
+									}
+									else
+									{
+										std::atomic_thread_fence(std::memory_order_acquire);
+										if (block->Next.load() != m_head.load())
+										{
+											Block* nb = block->Next.load();
+											size_t nHead = nb->Enqueue.LocalHead = nb->Dequeue.Head.load();
+											nTail = nb->Enqueue.Tail.load();
+											std::atomic_thread_fence(std::memory_order_acquire);
+
+											CLOAK_ASSUME(nHead == nTail);
+											nb->Enqueue.LocalHead = nHead;
+
+											T* e = nb->At(nTail);
+											::new(e)T(std::forward<Args>(args)...);
+											nb->Enqueue.Tail = (nTail + 1) & nb->SizeMask;
+											std::atomic_thread_fence(std::memory_order_release);
+											m_tail = nb;
+										}
+										else
+										{
+											const size_t nbs = m_largestBlockSize >= BLOCK_SIZE ? m_largestBlockSize : (m_largestBlockSize * 2);
+											Block* nb = CreateBlock(nbs);
+											if (nb == nullptr) { throw std::bad_alloc(); }
+											m_largestBlockSize = nbs;
+											T* e = nb->At(0);
+											::new(e)T(std::forward<Args>(args)...);
+											CLOAK_ASSUME(nb->Dequeue.Head == 0);
+											nb->Enqueue.Tail = nb->Dequeue.LocalTail = 1;
+											nb->Next = block->Next.load();
+											block->Next = nb;
+
+											std::atomic_thread_fence(std::memory_order_release);
+											m_tail = nb;
+										}
+									}
+								}
+						};
+
+						void* m_tls;
+						std::atomic<Producer*> m_head;
+
+						Producer* CLOAK_CALL_THIS GetProducer()
 						{
-							for (auto b = g_toLoad[a - 1]->begin(); b != g_toLoad[a - 1]->end();)
+							Producer* pr = reinterpret_cast<Producer*>(*API::Global::Memory::ThreadLocal::Get(m_tls));
+							if (pr == nullptr)
 							{
-								unsigned int lup = g_lastUpdatedPriority.exchange(0);
-								if (lup >= a) { a = lup + 1; break; }
-								loadInfo i = *b;
-								i.obj->setWaitForLoad();
-								i.obj->onStartLoadAction();
-								i.obj->Release();
-								g_toLoad[a - 1]->remove(b++);
-								if (++p == opCount) { goto foundAll; }
+								void* p = API::Global::Memory::MemoryHeap::Allocate(sizeof(Producer));
+								pr = ::new(p)Producer(BlockSize);
+								*API::Global::Memory::ThreadLocal::Get(m_tls) = pr;
+
+								Producer* op = m_head.load();
+								do {
+									pr->Next = op->Next.load();
+								} while (!m_head.compare_exchange_weak(op, pr));
+								op->Next = pr;
+							}
+							return pr;
+						}
+					public:
+						class ConsumerToken {
+							friend class LoadingQueue;
+							private:
+								Producer* const m_start;
+								explicit CLOAK_CALL ConsumerToken(In Producer* producer) : m_start(producer) {}
+							public:
+								template<typename U> bool CLOAK_CALL_THIS try_dequeue(Inout U& result) const
+								{
+									Producer* p = m_start;
+									do {
+										if (p->try_dequeue(result) == true) { return true; }
+										p = p->Next.load();
+									} while (p != m_start);
+									return false;
+								}
+						};
+
+						CLOAK_CALL LoadingQueue()
+						{
+							m_tls = API::Global::Memory::ThreadLocal::Allocate();
+							void* p = API::Global::Memory::MemoryHeap::Allocate(sizeof(Producer));
+							Producer* pr = ::new(p)Producer(BlockSize);
+							pr->Next = pr;
+							m_head = pr;
+							*API::Global::Memory::ThreadLocal::Get(m_tls) = pr;
+						}
+						CLOAK_CALL ~LoadingQueue()
+						{
+							std::atomic_thread_fence(std::memory_order_seq_cst);
+							Producer* p = m_head.load();
+							Producer* np = p;
+							do {
+								Producer* n = np->Next.load();
+								np->~Producer();
+								API::Global::Memory::MemoryHeap::Free(np);
+								np = n;
+							} while (np != p);
+							API::Global::Memory::ThreadLocal::Free(m_tls);
+						}
+
+						ConsumerToken CLOAK_CALL_THIS GetConsumerToken() { return ConsumerToken(GetProducer()); }
+
+						template<typename U> bool CLOAK_CALL_THIS try_dequeue(Inout U& result) { return GetConsumerToken().try_dequeue(result); }
+						template<typename... Args> void CLOAK_CALL_THIS enqueue(In Args&&... args)
+						{
+							Producer* p = GetProducer();
+							CLOAK_ASSUME(p != nullptr);
+							p->enqueue(std::forward<Args>(args)...);
+						}
+				};
+
+				typedef LoadingQueue<std::pair<ILoad*, uint64_t>, 512> queue_t;
+
+				uint8_t g_queueMemory[(PRIORITY_COUNT * sizeof(queue_t)) + std::alignment_of<queue_t>::value - 1];
+				queue_t* g_queues[PRIORITY_COUNT] = { nullptr, nullptr, nullptr, nullptr };
+				CE::RefPointer<API::Helper::ISyncSection> g_syncLoaded = nullptr;
+				std::atomic<int32_t> g_loadCount[PRIORITY_COUNT] = { 0, 0, 0, 0 };
+				std::atomic<size_t> g_loadingSlots = 0;
+				std::atomic<size_t> g_loadingState = 0;
+				std::atomic<bool> g_hasTask = false;
+				std::atomic<bool> g_reqTask = false;
+				std::atomic<bool> g_checkLoading = false;
+				std::atomic<bool> g_reqReschedule = false;
+				Engine::LinkedList<ILoad*>* g_loaded = nullptr;
+				API::Global::Task g_task = nullptr;
+
+				void CLOAK_CALL ScheduleJobs(In size_t threadID);
+				inline void CLOAK_CALL IncreasePriority(In API::Files::Priority p) 
+				{ 
+					CloakDebugLog("Increase Load Count[" + std::to_string(static_cast<uint8_t>(p)) + "] (+)");
+					if (g_loadCount[static_cast<uint8_t>(p)].fetch_add(1, std::memory_order_acq_rel) <= 0) { g_checkLoading = true; }
+				}
+				inline void CLOAK_CALL DecreasePriority(In API::Files::Priority p) 
+				{ 
+					CloakDebugLog("Decrease Load Count[" + std::to_string(static_cast<uint8_t>(p)) + "] (-)");
+					if (g_loadCount[static_cast<uint8_t>(p)].fetch_sub(1, std::memory_order_acq_rel) <= 1)
+					{ 
+						g_checkLoading = true; 
+						Impl::Global::Game::wakeThreads(); 
+					}
+				}
+				inline API::Global::Task CLOAK_CALL StartTask()
+				{
+					if (g_hasTask.exchange(true, std::memory_order_acq_rel) == false)
+					{
+						API::Global::Task t = [](In size_t threadID) { ScheduleJobs(threadID); };
+						t.AddDependency(g_task);
+						g_task = t;
+						g_task.Schedule();
+						return t;
+					}
+					return nullptr;
+				}
+				inline void CLOAK_CALL ScheduleJobs(In size_t threadID)
+				{
+					g_hasTask.store(false, std::memory_order_release);
+					if (Impl::Global::Game::GetCurrentComLevel() == 0)
+					{
+						g_reqTask.store(false, std::memory_order_release);
+						size_t slots = g_loadingSlots.exchange(0, std::memory_order_acq_rel);
+						for (size_t p = PRIORITY_COUNT; p > 0 && slots > 0; p--)
+						{
+							const queue_t::ConsumerToken token = g_queues[p - 1]->GetConsumerToken();
+							do {
+								queue_t::value_type v;
+								if (token.try_dequeue(v) == true)
+								{
+									if (v.first->CheckLoadAction(threadID, v.second) == true) { slots--; }
+									v.first->Release();
+								}
+								else { break; }
+							} while (slots > 0);
+						}
+						g_loadingSlots.fetch_add(slots, std::memory_order_acq_rel);
+						if (g_reqTask == true) 
+						{ 
+							StartTask().Schedule(threadID);
+							return; 
+						}
+						if (slots == 0) { g_reqReschedule.store(true, std::memory_order_release); }
+					}
+				}
+
+				CLOAK_CALL ILoad::ILoad()
+				{
+					m_stateID = 0;
+					m_canBeQueued = true;
+					m_canDequeue = true;
+					m_isLoaded = false;
+					m_state = DEFAULT_STATE;
+					m_ptr = nullptr;
+				}
+				CLOAK_CALL ILoad::~ILoad()
+				{
+					auto p = m_ptr.exchange(nullptr, std::memory_order_acq_rel);
+					if (p != nullptr)
+					{
+						API::Helper::Lock lock(g_syncLoaded);
+						g_loaded->erase(p);
+					}
+				}
+				bool CLOAK_CALL_THIS ILoad::CanBeDequeued() const { return m_canDequeue.load(std::memory_order_consume); }
+				bool CLOAK_CALL_THIS ILoad::CheckLoadAction(In size_t threadID, In uint64_t stateID)
+				{
+					if (m_canDequeue.load(std::memory_order_consume) == false)
+					{
+						Impl::Global::Task::IHelpWorker* worker = Impl::Global::Task::GetCurrentWorker(threadID);
+						worker->HelpWorkWhile([this]() { return this->CanBeDequeued() == false; }, API::Global::Threading::Flag::All, true);
+					}
+					uint64_t csid = m_stateID.load(std::memory_order_acquire);
+					if (csid == stateID)
+					{
+						m_canBeQueued.store(false, std::memory_order_release);
+						if (m_stateID.compare_exchange_strong(csid, csid + 1, std::memory_order_acq_rel)) 
+						{
+							m_canDequeue.store(false, std::memory_order_release);
+							if (iProcessLoadAction(threadID) == true) { return true; }
+							m_canDequeue.store(true, std::memory_order_release);
+						}
+						m_canBeQueued.store(true, std::memory_order_release);
+					}
+					return false;
+				}
+				void CLOAK_CALL_THIS ILoad::ExecuteLoadAction(In size_t threadID, In const LoadState& state, In API::Global::Threading::Priority tp)
+				{
+					bool keepLoading = false;
+					switch (state.Type)
+					{
+						case LoadType::DELAYED:
+						{
+							if (m_isLoaded == true)
+							{
+								CloakDebugLog("Start delayed loading: " + GetDebugName());
+								iDelayedLoadFile(&keepLoading);
+								CloakDebugLog("Finished loading: " + GetDebugName() + " Keep Loading: " + (keepLoading == true ? "true" : "false"));
+								break;
+							}
+							//else: fall through
+						}
+						case LoadType::LOAD:
+						{
+							if (m_isLoaded == false)
+							{
+								CloakDebugLog("Start loading: " + GetDebugName());
+								bool kl = false;
+								if (iLoadFile(&kl) == true)
+								{
+									m_isLoaded = true;
+									keepLoading = kl;
+									CloakDebugLog("Finished loading: " + GetDebugName() + " Keep Loading: " + (kl == true ? "true" : "false"));
+								}
+								else
+								{
+									CloakDebugLog("Failed loading: " + GetDebugName());
+								}
+							}
+							break;
+						}
+						case LoadType::UNLOAD:
+						case LoadType::RELOAD:
+						{
+							if (m_isLoaded.exchange(false) == true)
+							{
+								iUnloadFile();
+								CloakDebugLog("Unloaded: " + GetDebugName());
+							}
+							if (state.Type == LoadType::RELOAD)
+							{
+								API::Global::PushTask([this, state, tp](In size_t threadID) { this->ExecuteLoadAction(threadID, { LoadType::LOAD, state.Priority }, tp); }).Schedule(API::Global::Threading::Flag::IO, tp, threadID);
+								return;
+							}
+							break;
+						}
+						default:
+							break;
+					}
+					m_canBeQueued.store(true, std::memory_order_release);
+					if (iProcessLoadAction(threadID) == false)
+					{
+						if (m_isLoaded.load() == false)
+						{
+							auto p = m_ptr.exchange(nullptr, std::memory_order_acq_rel);
+							if (p != nullptr)
+							{
+								API::Helper::Lock lock(g_syncLoaded);
+								g_loaded->pop(p);
 							}
 						}
-					}
-				foundAll:;
-					CLOAK_ASSUME(p == opCount);
-				}
-			}
-			inline void CLOAK_CALL IncreaseLoadCount(In unsigned int p)
-			{
-				if (g_loadCount[p].fetch_add(1) == 0) { g_checkedLC = false; }
-			}
-			inline void CLOAK_CALL IncreaseLoadCount(In API::Files::Priority p) { IncreaseLoadCount(static_cast<unsigned int>(p)); }
-			inline void CLOAK_CALL DecreaseLoadCount(In unsigned int p)
-			{
-				if (g_loadCount[p].fetch_sub(1) == 1) { Impl::Global::Game::wakeThreads(); g_checkedLC = false; }
-			}
-			inline void CLOAK_CALL DecreaseLoadCount(In API::Files::Priority p) { DecreaseLoadCount(static_cast<unsigned int>(p)); }
-			inline void CLOAK_CALL CheckLoadCount()
-			{
-				if (g_checkedLC.exchange(true) == false)
-				{
-					bool f = false;
-					for (size_t a = PRIORITY_COUNT; a > 0; a--)
-					{
-						f = f || g_loadCount[a - 1] != 0;
-						g_isLoading[a - 1] = f;
-					}
-				}
-			}
-			inline void CLOAK_CALL pushInLoadQueue(In ILoad* t, In API::Files::Priority prio)
-			{
-				if (t != nullptr && Impl::Global::Game::canThreadRun())
-				{
-					API::Helper::Lock lock(g_sync[static_cast<unsigned int>(prio)]);
-					loadInfo a;
-					a.obj = t;
-					t->AddRef();
-					IncreaseLoadCount(prio);
-					t->setPriority(prio, g_toLoad[static_cast<unsigned int>(prio)]->push(a));
-					if (g_remainLoad.fetch_add(1) == 0) { API::Global::PushTask([](In size_t id) {loadFindJob(); }); }
-					unsigned int lp = g_lastUpdatedPriority;
-					while (lp < static_cast<unsigned int>(prio) && !g_lastUpdatedPriority.compare_exchange_strong(lp, static_cast<unsigned int>(prio))) {}
-				}
-			}
-
-			CLOAK_CALL_THIS ILoad::ILoad() : m_loadPtr(nullptr) 
-			{ 
-				m_loaded = false; 
-				m_loading = false; 
-				m_waitForLoad = false;
-				m_priority = PRIORITY_BACKGROUND;
-				m_loadAction = LoadType::NONE;
-				API::Helper::Lock lock(g_syncSet);
-				m_ptr = g_loads->push(this);
-			}
-			CLOAK_CALL_THIS ILoad::~ILoad() 
-			{
-				API::Helper::Lock lock(g_syncSet);
-				g_loads->pop(m_ptr);
-			}
-			bool CLOAK_CALL_THIS ILoad::onLoad()
-			{
-				if (m_loaded == false)
-				{
-					CloakDebugLog("load: " + GetDebugName());
-					bool r = false;
-					m_loaded = iLoadFile(&r);
-					CloakDebugLog("finished loading: " + GetDebugName());
-					return r;
-				}
-				return false;
-			}
-			void CLOAK_CALL_THIS ILoad::onUnload()
-			{
-				if (m_loaded == true)
-				{
-					CloakDebugLog("unload: " + GetDebugName());
-					iUnloadFile();
-					CloakDebugLog("finished unloading: " + GetDebugName());
-					m_loaded = false;
-				}
-			}
-			bool CLOAK_CALL_THIS ILoad::onDelayedLoad()
-			{
-				if (m_loaded == false) { onLoad(); }
-				if (m_loaded == true)
-				{
-					CloakDebugLog("delayed loaded: " + GetDebugName());
-					bool r = false;
-					iDelayedLoadFile(&r);
-					CloakDebugLog("finished delayed loading: " + GetDebugName());
-					return r;
-				}
-				return false;
-			}
-			void CLOAK_CALL_THIS ILoad::onStartLoadAction(In_opt bool keepLoading)
-			{
-				m_loading = true;
-				m_loadPtr = nullptr;
-				LoadType t = m_loadAction.exchange(LoadType::NONE);
-				API::Files::Priority p = m_priority.exchange(PRIORITY_BACKGROUND);
-				if (t != LoadType::NONE)
-				{
-					AddRef();
-					API::Global::Threading::ScheduleHint hint = t == LoadType::UNLOAD || t == LoadType::RELOAD ? API::Global::Threading::ScheduleHint::None : API::Global::Threading::ScheduleHint::IO;
-					API::Global::Threading::Priority priority = API::Global::Threading::Priority::Normal;
-					switch (p)
-					{
-						case PRIORITY_BACKGROUND: priority = API::Global::Threading::Priority::Low; break;
-						case API::Files::Priority::HIGH: priority = API::Global::Threading::Priority::High; break;
-						default: break;
-					}
-					API::Global::PushTask([this, t](In size_t id) { this->onProcessLoadAction(t); }).Schedule(hint, priority);
-					return;
-				}
-				m_waitForLoad = false;
-				DecreaseLoadCount(p);
-				m_loading = false;
-				if (keepLoading == true) { iRequestDelayedLoad(PRIORITY_BACKGROUND); }
-				m_isLoaded = m_loaded.load() == true;
-			}
-			void CLOAK_CALL_THIS ILoad::onProcessLoadAction(In LoadType loadType)
-			{
-				bool keepLoading = false;
-				switch (loadType)
-				{
-					case CloakEngine::Engine::FileLoader::LoadType::LOAD:
-						keepLoading = onLoad();
-						break;
-					case CloakEngine::Engine::FileLoader::LoadType::UNLOAD:
-						onUnload();
-						break;
-					case CloakEngine::Engine::FileLoader::LoadType::RELOAD:
-						onUnload();
-						API::Global::PushTask([this](In size_t id) { this->onProcessLoadAction(LoadType::LOAD); }).Schedule(API::Global::Threading::ScheduleHint::IO, API::Global::Threading::Priority::High);
-						return;
-					case CloakEngine::Engine::FileLoader::LoadType::DELAYED:
-						keepLoading = onDelayedLoad();
-						break;
-					default:
-						CLOAK_ASSUME(false);
-						break;
-				}
-				onStartLoadAction(keepLoading);
-				Release();
-			}
-			void CLOAK_CALL_THIS ILoad::setPriority(In API::Files::Priority p, In Engine::LinkedList<loadInfo>::const_iterator ptr)
-			{
-				API::Helper::Lock lock(g_sync[static_cast<unsigned int>(p)]);
-				m_loadPtr = ptr;
-				m_priority = p;
-			}
-			void CLOAK_CALL_THIS ILoad::setWaitForLoad()
-			{
-				m_waitForLoad = true;
-				m_loadPtr = nullptr;
-			}
-			void CLOAK_CALL_THIS ILoad::updateSetting(In const API::Global::Graphic::Settings& nset)
-			{
-				if (m_loaded && iCheckSetting(nset)) { iRequestReload(API::Files::Priority::NORMAL); }
-			}
-			bool CLOAK_CALL_THIS ILoad::iCheckSetting(In const API::Global::Graphic::Settings& nset) const
-			{
-				return false;
-			}
-			void CLOAK_CALL_THIS ILoad::iRequestLoad(In_opt API::Files::Priority prio)
-			{
-				CloakDebugLog("Request load: " + GetDebugName());
-				LoadType exp = LoadType::NONE;
-				if (m_loadAction.compare_exchange_strong(exp, LoadType::LOAD) == true && m_loading == false)
-				{
-					pushInLoadQueue(this, prio);
-				}
-			}
-			void CLOAK_CALL_THIS ILoad::iRequestUnload(In_opt API::Files::Priority prio)
-			{
-				CloakDebugLog("Request unload: " + GetDebugName());
-				if (m_loadAction.exchange(LoadType::UNLOAD) == LoadType::NONE && m_loading == false)
-				{
-					pushInLoadQueue(this, prio);
-				}
-			}
-			void CLOAK_CALL_THIS ILoad::iRequestReload(In_opt API::Files::Priority prio)
-			{
-				CloakDebugLog("Request reload: " + GetDebugName());
-				LoadType exp = LoadType::NONE;
-				if (m_loadAction.compare_exchange_strong(exp, LoadType::RELOAD) == true && m_loading == false)
-				{
-					pushInLoadQueue(this, prio);
-				}
-			}
-			void CLOAK_CALL_THIS ILoad::iRequestDelayedLoad(In_opt API::Files::Priority prio)
-			{
-				CloakDebugLog("Request delayed loading: " + GetDebugName());
-				LoadType exp = LoadType::NONE;
-				if (m_loadAction.compare_exchange_strong(exp, LoadType::DELAYED) == true && m_loading == false)
-				{
-					pushInLoadQueue(this, prio);
-				}
-			}
-			void CLOAK_CALL_THIS ILoad::iSetPriority(In API::Files::Priority p)
-			{
-				if (m_loading == false)
-				{
-					bool updPr = false;
-					API::Files::Priority op;
-					API::Files::Priority np;
-					do {
-						op = m_priority.load();
-						np = op;
-						updPr = false;
-						if (static_cast<unsigned int>(p) > static_cast<unsigned int>(np))
+						else if(m_ptr.load(std::memory_order_acquire) == nullptr)
 						{
-							np = p;
-							updPr = true;
-						}
-					} while (!m_priority.compare_exchange_strong(op, np));
-					if (updPr)
-					{
-						API::Helper::Lock lock(g_sync[static_cast<unsigned int>(op)]);
-						Engine::LinkedList<loadInfo>::const_iterator e = m_loadPtr.load();
-						if (e != nullptr)
-						{
-							loadInfo li = *e;
-							g_toLoad[static_cast<unsigned int>(op)]->remove(e);
-							IncreaseLoadCount(np);
-							DecreaseLoadCount(op);
+							API::Helper::Lock lock(g_syncLoaded);
+							auto p = g_loaded->push(this);
 							lock.unlock();
-							lock.lock(g_sync[static_cast<unsigned int>(np)]);
-							m_loadPtr = g_toLoad[static_cast<unsigned int>(np)]->push(li);
-							unsigned int lp = g_lastUpdatedPriority;
-							while (lp < static_cast<unsigned int>(np) && !g_lastUpdatedPriority.compare_exchange_strong(lp, static_cast<unsigned int>(np))) {}
+							m_ptr.store(p, std::memory_order_release);
 						}
-						else if (m_waitForLoad)
-						{
-							IncreaseLoadCount(np);
-							DecreaseLoadCount(op);
-						}
-						else { m_priority = API::Files::Priority::LOW; }
+						if (keepLoading == true) { iRequestDelayedLoad(PRIORITY_BACKGROUND); }
+						m_canDequeue.store(true, std::memory_order_release);
+						g_loadingSlots.fetch_add(1, std::memory_order_relaxed);
+						if (g_reqReschedule.exchange(false, std::memory_order_acq_rel) == true) { StartTask().Schedule(threadID); }
 					}
+					DecreasePriority(state.Priority);
+					Release();
 				}
-				else
+				void CLOAK_CALL_THIS ILoad::CheckSettings(In const API::Global::Graphic::Settings& nset)
 				{
-					API::Files::Priority op;
-					API::Files::Priority np;
-					do {
-						op = m_priority.load();
-						np = op;
-						if (static_cast<unsigned int>(p) > static_cast<unsigned int>(np)) { np = p; }
-					} while (!m_priority.compare_exchange_strong(op, np));
-					if (np != op)
-					{
-						IncreaseLoadCount(np);
-						DecreaseLoadCount(op);
-						if (m_loading == false && np != API::Files::Priority::LOW && m_loadPtr.load() == nullptr)
-						{
-							DecreaseLoadCount(m_priority.exchange(API::Files::Priority::LOW));
-						}
-					}
+					if (iCheckSetting(nset) == true) { iRequestReload(API::Files::Priority::NORMAL); }
 				}
-			}
 
-			void CLOAK_CALL onStart()
-			{
-				g_loads = new Engine::LinkedList<ILoad*>();
-				for (size_t a = 0; a < ARRAYSIZE(g_toLoad); a++) { g_toLoad[a] = new Engine::LinkedList<loadInfo>(); }
-				for (size_t a = 0; a < ARRAYSIZE(g_sync); a++) { CREATE_INTERFACE(CE_QUERY_ARGS(&g_sync[a])); }
-				CREATE_INTERFACE(CE_QUERY_ARGS(&g_syncSet));
-			}
-			void CLOAK_CALL onStop()
-			{
-				for (size_t a = 0; a < ARRAYSIZE(g_sync); a++) { SAVE_RELEASE(g_sync[a]); }
-				SAVE_RELEASE(g_syncSet);
-				for (size_t a = 0; a < ARRAYSIZE(g_toLoad); a++)
+				void CLOAK_CALL_THIS ILoad::iRequestLoad(In_opt API::Files::Priority prio)
 				{
-					g_toLoad[a]->for_each([=](loadInfo& info) {SAVE_RELEASE(info.obj); });
-					delete g_toLoad[a];
+					CloakDebugLog("Request load: " + GetDebugName());
+					iQueueRequest(LoadType::LOAD, prio);
 				}
-				delete g_loads;
-			}
-			void CLOAK_CALL updateSetting(In const API::Global::Graphic::Settings& nset)
-			{
-				API::Helper::Lock lock(g_syncSet);
-				g_loads->for_each([=](ILoad* l) {
-					l->updateSetting(nset);
-				});
-			}
-			bool CLOAK_CALL isLoading(In_opt API::Files::Priority prio)
-			{
-				CheckLoadCount();
-				return g_isLoading[static_cast<unsigned int>(prio)];
+				void CLOAK_CALL_THIS ILoad::iRequestUnload(In_opt API::Files::Priority prio)
+				{
+					CloakDebugLog("Request unload: " + GetDebugName());
+					iQueueRequest(LoadType::UNLOAD, prio);
+				}
+				void CLOAK_CALL_THIS ILoad::iRequestReload(In_opt API::Files::Priority prio)
+				{
+					CloakDebugLog("Request reload: " + GetDebugName());
+					iQueueRequest(LoadType::RELOAD, prio);
+				}
+				void CLOAK_CALL_THIS ILoad::iRequestDelayedLoad(In_opt API::Files::Priority prio)
+				{
+					CloakDebugLog("Request delayed load: " + GetDebugName());
+					iQueueRequest(LoadType::DELAYED, prio);
+				}
+				void CLOAK_CALL_THIS ILoad::iSetPriority(In API::Files::Priority p)
+				{
+					LoadState cs = m_state.load(std::memory_order_acquire);
+					LoadState ns;
+					bool upd;
+					do {
+						upd = false;
+						ns = cs;
+						if (ns.Type != LoadType::NONE && ns.Priority < p)
+						{
+							ns.Priority = p;
+							upd = true;
+						}
+					} while (!m_state.compare_exchange_weak(cs, ns, std::memory_order_acq_rel));
+					if (upd == true)
+					{
+						IncreasePriority(ns.Priority);
+						iPushInQueue(ns.Priority);
+						DecreasePriority(cs.Priority);
+					}
+				}
+				bool CLOAK_CALL_THIS ILoad::iCheckSetting(In const API::Global::Graphic::Settings& nset) const { return false; }
+
+				void CLOAK_CALL_THIS ILoad::iQueueRequest(In LoadType type, In API::Files::Priority priority)
+				{
+					LoadState cs = m_state.load(std::memory_order_acquire);
+					LoadState ns;
+					bool upd;
+					do {
+						upd = false;
+						ns = cs;
+						CLOAK_ASSUME(static_cast<uint8_t>(type) < ARRAYSIZE(QUEUE_TRANSITION));
+						CLOAK_ASSUME(static_cast<uint8_t>(cs.Type) < ARRAYSIZE(QUEUE_TRANSITION));
+						ns.Type = QUEUE_TRANSITION[static_cast<uint8_t>(cs.Type)][static_cast<uint8_t>(type)];
+						if (ns.Type != cs.Type)
+						{
+							ns.Priority = priority;
+							upd = true;
+						}
+					} while (!m_state.compare_exchange_weak(cs, ns, std::memory_order_acq_rel));
+					if (upd == true)
+					{
+						if (ns.Type != LoadType::NONE) 
+						{ 
+							IncreasePriority(priority); 
+							iPushInQueue(priority);
+						}
+						if (cs.Type != LoadType::NONE) { DecreasePriority(cs.Priority); }
+					}
+				}
+				bool CLOAK_CALL_THIS ILoad::iProcessLoadAction(In size_t threadID)
+				{
+					LoadState cs = m_state.exchange(PROCESSING_STATE, std::memory_order_acq_rel);
+					IncreasePriority(PROCESSING_STATE.Priority);
+				check_state:
+					if (cs.Type != LoadType::NONE)
+					{
+						API::Global::Threading::Flag tf;
+						API::Global::Threading::Priority tp;
+						switch (cs.Type)
+						{
+							case LoadType::PROCESSING:
+								DecreasePriority(cs.Priority);
+								cs = m_state.exchange(DEFAULT_STATE, std::memory_order_acq_rel);
+								if (cs.Type != LoadType::PROCESSING) { goto check_state; }
+								DecreasePriority(cs.Priority);
+								return false;
+							case LoadType::LOAD:
+							case LoadType::DELAYED:
+								tf = API::Global::Threading::Flag::IO;
+								break;
+							default:
+								tf = API::Global::Threading::Flag::None;
+								break;
+						}
+						switch (cs.Priority)
+						{
+							case PRIORITY_BACKGROUND:
+								tp = API::Global::Threading::Priority::Low;
+								break;
+							case API::Files::Priority::HIGH:
+								tp = API::Global::Threading::Priority::High;
+								break;
+							default:
+								tp = API::Global::Threading::Priority::Normal;
+								break;
+						}
+						m_canBeQueued.store(false, std::memory_order_release);
+						AddRef();
+						API::Global::PushTask([this, cs, tp](In size_t threadID) { this->ExecuteLoadAction(threadID, cs, tp); }).Schedule(tf, tp, threadID);
+						return true;
+					}
+					return false;
+				}
+				void CLOAK_CALL_THIS ILoad::iPushInQueue(In API::Files::Priority priority)
+				{
+					uint64_t csid = m_stateID.load(std::memory_order_acquire);
+					uint64_t nsid;
+					do {
+						nsid = csid;
+						if (m_canBeQueued.load(std::memory_order_acquire) == true) { nsid = csid + 1; }
+					} while (!m_stateID.compare_exchange_weak(csid, nsid, std::memory_order_acq_rel));
+					if (nsid != csid)
+					{
+						AddRef();
+						g_queues[static_cast<uint8_t>(priority)]->enqueue(std::make_pair(this, nsid));
+						g_reqTask.store(true, std::memory_order_release);
+						StartTask();
+					}
+				}
+
+				void CLOAK_CALL onStart()
+				{
+					CREATE_INTERFACE(CE_QUERY_ARGS(&g_syncLoaded));
+					g_loaded = new Engine::LinkedList<ILoad*>();
+					g_loadingSlots = API::Global::GetExecutionThreadCount();
+					uintptr_t mempos = reinterpret_cast<uintptr_t>(Align<queue_t>(&g_queueMemory[0]));
+					for (size_t a = 0; a < PRIORITY_COUNT; a++) 
+					{
+						g_queues[a] = ::new(reinterpret_cast<void*>(mempos + (sizeof(queue_t) * a)))queue_t();
+					}
+				}
+				void CLOAK_CALL onStartLoading()
+				{
+					if (g_reqTask == true) { StartTask(); }
+				}
+				void CLOAK_CALL waitOnLoading()
+				{
+					Impl::Global::Task::IHelpWorker* hw = Impl::Global::Task::GetCurrentWorker();
+					hw->HelpWorkWhile([]() {return isLoading(PRIORITY_BACKGROUND); }, API::Global::Threading::Flag::All, true);
+				}
+				void CLOAK_CALL onStop()
+				{
+					g_task = nullptr;
+					for (size_t a = 0; a < PRIORITY_COUNT; a++) { g_queues[a]->~LoadingQueue(); }
+					delete g_loaded;
+					g_syncLoaded = nullptr;
+				}
+				void CLOAK_CALL updateSetting(In const API::Global::Graphic::Settings& nset)
+				{
+					API::Helper::Lock lock(g_syncLoaded);
+					g_loaded->for_each([&nset](In ILoad* load) {
+						load->CheckSettings(nset);
+					});
+				}
+				bool CLOAK_CALL isLoading(In_opt API::Files::Priority prio)
+				{
+					while (g_checkLoading.exchange(false, std::memory_order_acq_rel) == true)
+					{
+						for (size_t a = PRIORITY_COUNT; a > 0; a--)
+						{
+							if (g_loadCount[a - 1].load(std::memory_order_consume) > 0) 
+							{ 
+								g_loadingState.store(a, std::memory_order_release); 
+								goto updated_loading_state;
+							}
+						}
+						g_loadingState.store(0, std::memory_order_release);
+					updated_loading_state:;
+					}
+					return static_cast<uint8_t>(prio) < g_loadingState.load(std::memory_order_consume);
+				}
 			}
 		}
 	}

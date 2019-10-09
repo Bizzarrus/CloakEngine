@@ -161,7 +161,7 @@ namespace CloakCompiler {
 					std::string pName = m_projName;
 					switch (type)
 					{
-						case CloakCompiler::Engine::Lib::Type::Shader: pName + "_ShaderLib"; break;
+						case CloakCompiler::Engine::Lib::Type::Shader: pName += "_ShaderLib"; break;
 						case CloakCompiler::Engine::Lib::Type::Image: pName += "_ImageLib"; break;
 						default: CLOAK_ASSUME(false); break;
 					}

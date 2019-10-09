@@ -119,7 +119,7 @@ namespace CloakEngine {
 				bool CLOAK_CALL_THIS RessourceHandler::isLoaded() const { return m_isLoaded; }
 				API::Global::Debug::Error CLOAK_CALL_THIS RessourceHandler::Delete()
 				{
-					if (isLoaded()) { onUnload(); }
+					if (isLoaded()) { iUnloadFile(); }
 					return SavePtr::Delete();
 				}
 

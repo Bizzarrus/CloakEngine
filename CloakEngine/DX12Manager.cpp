@@ -106,7 +106,7 @@ namespace CloakEngine {
 						HMONITOR Monitor;
 					};
 
-#define CREATE_AND_POPULATE(Name, Prev) if(SUCCEEDED(hRet) && device->Prev != nullptr) { device->Name = device->Prev; } else { device->Prev = nullptr; hRet = Lib::D3D12CreateDevice(adapter, MINIMAL_FEATURE_LEVEL, CE_QUERY_ARGS(&device->Name));}
+#define CREATE_AND_POPULATE(Name, Prev) if(SUCCEEDED(hRet) && device->Prev != nullptr) { device->Name = device->Prev; } else { device->Prev = nullptr; hRet = Lib::D3D12CreateDevice(adapter, MINIMAL_FEATURE_LEVEL, CE_QUERY_ARGS(&device->Name)); if(SUCCEEDED(hRet)){ API::Global::Log::WriteToLog("DirectX 12 API Version: " #Name); }}
 					inline HRESULT CreateDevice(In IDXGIAdapter* adapter, Out GraphicDevice* device)
 					{
 						HRESULT hRet = E_NOINTERFACE;
@@ -677,7 +677,7 @@ namespace CloakEngine {
 					}
 					void CLOAK_CALL_THIS Manager::WaitForGPU()
 					{
-						uint64_t* vals = NewArray(uint64_t, m_adapterCount * 2);
+						uint64_t* vals = reinterpret_cast<uint64_t*>(alloca(sizeof(uint64_t) * m_adapterCount * 2));
 						for (size_t a = 0; a < m_adapterCount; a++)
 						{
 							vals[(a << 1) + 0] = m_queues[a].IncrementFence(Impl::Rendering::QUEUE_TYPE_COPY);
@@ -688,20 +688,8 @@ namespace CloakEngine {
 							m_queues[a].WaitForFence(Impl::Rendering::QUEUE_TYPE_COPY, vals[(a << 1) + 0]);
 							m_queues[a].WaitForFence(Impl::Rendering::QUEUE_TYPE_DIRECT, vals[(a << 1) + 1]);
 						}
-						DeleteArray(vals);
 					}
 					bool CLOAK_CALL_THIS Manager::SupportMultiThreadedRendering() const { return true; }
-					void CLOAK_CALL_THIS Manager::IdleGPU() 
-					{ 
-						for (size_t a = 0; a < m_adapterCount; a++)
-						{
-							Queue* q = &m_queues[a];
-							uint64_t fence = q->IncrementFence(QUEUE_TYPE_DIRECT);
-							while (q->WaitForFence(QUEUE_TYPE_DIRECT, fence) == false) {}
-							fence = q->IncrementFence(QUEUE_TYPE_COPY);
-							while (q->WaitForFence(QUEUE_TYPE_COPY, fence) == false) {}
-						}
-					}
 					bool CLOAK_CALL_THIS Manager::GetFactory(In REFIID riid, Outptr void** ptr) const 
 					{ 
 						if (IsReady())
@@ -765,9 +753,9 @@ namespace CloakEngine {
 					{
 						return DepthBuffer::Create(desc, nodeID, nodeMask);
 					}
-					ISwapChain* CLOAK_CALL_THIS Manager::CreateSwapChain(In const API::Global::Graphic::Settings& gset, Out_opt HRESULT* hRet)
+					CE::RefPointer<ISwapChain> CLOAK_CALL_THIS Manager::CreateSwapChain(In const API::Global::Graphic::Settings& gset, Out_opt HRESULT* hRet)
 					{
-						SwapChain* sc = new SwapChain(this, m_hardwareSettings);
+						CE::RefPointer<ISwapChain> sc = CE::RefPointer<ISwapChain>::Construct<SwapChain>(this, m_hardwareSettings);
 						HRESULT hr = sc->Recreate(gset);
 						if (hRet != nullptr) { *hRet = hr; }
 						return sc;

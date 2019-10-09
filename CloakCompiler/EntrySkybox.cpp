@@ -819,7 +819,7 @@ namespace CloakCompiler {
 							}
 						}
 					}
-					void CLOAK_CALL_THIS EntrySkybox::WriteLibFiles(In const CE::RefPointer<CloakEngine::Files::IWriter>& file, In const API::Image::LibInfo& lib, In size_t entryID, In const Lib::CMakeFile& cmake, In const CE::Global::Task& finishTask)
+					void CLOAK_CALL_THIS EntrySkybox::WriteLibFiles(In const CE::RefPointer<CloakEngine::Files::IWriter>& file, In const API::Image::LibInfo& lib, In const BitInfo& bits, In size_t entryID, In const Engine::Lib::CMakeFile& cmake, In const CE::Global::Task& finishTask)
 					{
 
 					}

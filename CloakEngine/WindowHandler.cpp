@@ -118,7 +118,7 @@ namespace CloakEngine {
 				{
 					CloakDebugLog("Gain Focus!");
 					API::Global::Graphic::Settings gset;
-					Impl::Global::Graphic::GetModifedSettings(&gset);
+					API::Global::Graphic::GetSettings(&gset);
 					restoreWindow();
 					if (gset.WindowMode == API::Global::Graphic::WindowMode::FULLSCREEN)
 					{
@@ -135,7 +135,7 @@ namespace CloakEngine {
 				{
 					CloakDebugLog("Loose Focus!");
 					API::Global::Graphic::Settings gset;
-					Impl::Global::Graphic::GetModifedSettings(&gset);
+					API::Global::Graphic::GetSettings(&gset);
 					//TODO
 					Impl::Global::Mouse::LooseFocus();
 					Impl::Global::Input::LooseFocus();
@@ -181,7 +181,7 @@ namespace CloakEngine {
 							if (g_curMode == API::Global::Graphic::WindowMode::WINDOW)
 							{
 								API::Global::Graphic::Settings gset;
-								Impl::Global::Graphic::GetModifedSettings(&gset);
+								API::Global::Graphic::GetSettings(&gset);
 								if (W != gset.Resolution.Width || H != gset.Resolution.Height) { CloakDebugLog("Got wrong window size!"); }
 							}
 #endif
@@ -303,7 +303,7 @@ namespace CloakEngine {
 			{
 				API::Helper::Lock lock(g_sync);
 				API::Global::Graphic::Settings gset;
-				Impl::Global::Graphic::GetModifedSettings(&gset);
+				API::Global::Graphic::GetSettings(&gset);
 				HMONITOR monitor = Graphic::Core::GetCommandListManager()->GetMonitor();
 				MONITORINFO monInfo = {};
 				if (monitor != static_cast<HMONITOR>(INVALID_HANDLE_VALUE) && GetMonitorInfo(monitor, &monInfo) == TRUE)

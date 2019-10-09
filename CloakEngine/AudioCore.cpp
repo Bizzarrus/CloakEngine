@@ -360,6 +360,7 @@ namespace CloakEngine {
 				}
 				inline void CLOAK_CALL refillBuffer(In size_t id)
 				{
+					CLOAK_ASSUME(id < g_allocCount);
 					if (g_running != ShutdownState::Closed)
 					{
 						bool hasMore = false;
